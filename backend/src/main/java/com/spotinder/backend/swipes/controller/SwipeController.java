@@ -1,0 +1,25 @@
+package com.spotinder.backend.swipes.controller;
+
+import com.spotinder.backend.swipes.dto.SwipeRequest;
+import com.spotinder.backend.swipes.dto.SwipeResponse;
+import com.spotinder.backend.swipes.service.SwipeService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/swipes")
+public class SwipeController {
+
+    private final SwipeService swipeService;
+
+    public SwipeController(SwipeService swipeService) {
+        this.swipeService = swipeService;
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public SwipeResponse recordSwipe(@Valid @RequestBody SwipeRequest request) {
+        return swipeService.recordSwipe(request);
+    }
+}
