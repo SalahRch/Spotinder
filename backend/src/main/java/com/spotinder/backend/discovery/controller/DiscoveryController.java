@@ -2,9 +2,7 @@ package com.spotinder.backend.discovery.controller;
 
 import com.spotinder.backend.discovery.dto.SongResponse;
 import com.spotinder.backend.discovery.service.DiscoveryService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,9 +16,11 @@ public class DiscoveryController {
         this.discoveryService = discoveryService;
     }
 
-    @GetMapping
-    public List<SongResponse> discover() {
-        return discoveryService.discover();
+    @GetMapping("/{spotifyId}")
+    public List<SongResponse> discover(
+            @PathVariable String spotifyId
+    ) {
+        return discoveryService.discover(spotifyId);
     }
 
 }

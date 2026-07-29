@@ -17,9 +17,11 @@ public class SwipeController {
         this.swipeService = swipeService;
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public SwipeResponse recordSwipe(@Valid @RequestBody SwipeRequest request) {
-        return swipeService.recordSwipe(request);
+    @PostMapping("/{spotifyId}")
+    public SwipeResponse recordSwipe(
+            @PathVariable String spotifyId,
+            @RequestBody SwipeRequest request
+    ) {
+        return swipeService.recordSwipe(spotifyId, request);
     }
 }

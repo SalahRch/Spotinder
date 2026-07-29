@@ -7,7 +7,6 @@ import AlbumCard from "./AlbumCard";
 import { songs } from "../assets/songs";
 
 export default function PhoneMockup() {
-
     const [currentSong, setCurrentSong] = useState(0);
 
     useEffect(() => {
@@ -22,57 +21,131 @@ export default function PhoneMockup() {
 
     return (
         <motion.div
-            animate={{ y: [0, -12, 0] }}
+            animate={{
+                y: [0, -12, -8, 0],
+                x: [0, 2, -2, 0],
+                rotate: [-0.8, 0.8, -0.8],
+                scale: [1, 1.01, 1],
+            }}
             transition={{
-                duration: 8,
+                duration: 11,
                 repeat: Infinity,
                 ease: "easeInOut",
             }}
-            className="relative flex justify-center"
+            className="relative flex justify-center will-change-transform"
         >
             {/* Ambient Glow */}
 
-            <div className="absolute h-[760px] w-[420px] rounded-full bg-gradient-to-br from-blue-500/15 via-violet-500/10 to-fuchsia-500/15 blur-[120px]" />
+            <motion.div
+                animate={{
+                    scale: [1, 1.08, 1],
+                    opacity: [0.75, 1, 0.75],
+                }}
+                transition={{
+                    duration: 12,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                }}
+                className="
+                    absolute
+                    h-[760px]
+                    w-[420px]
+                    rounded-full
+                    bg-gradient-to-br
+                    from-cyan-500/15
+                    via-violet-500/10
+                    to-fuchsia-500/15
+                    blur-[120px]
+                "
+            />
 
-            <div className="absolute bottom-24 h-44 w-44 rounded-full bg-cyan-400/20 blur-[90px]" />
+            {/* Bottom Glow */}
+
+            <motion.div
+                animate={{
+                    scale: [1, 1.12, 1],
+                    opacity: [0.2, 0.35, 0.2],
+                }}
+                transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                }}
+                className="
+                    absolute
+                    bottom-24
+                    h-44
+                    w-44
+                    rounded-full
+                    bg-cyan-400/20
+                    blur-[90px]
+                "
+            />
+
             {/* Phone Shadow */}
 
-            <div className="absolute top-8 h-[690px] w-[340px] rounded-[44px] bg-black/40 blur-2xl" />
-
+            <motion.div
+                animate={{
+                    scale: [1, 0.95, 1],
+                    y: [0, 10, 0],
+                    opacity: [0.45, 0.28, 0.45],
+                }}
+                transition={{
+                    duration: 11,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                }}
+                className="
+                    absolute
+                    top-8
+                    h-[690px]
+                    w-[340px]
+                    rounded-[44px]
+                    bg-black/40
+                    blur-2xl
+                "
+            />
 
             {/* Phone */}
 
             <div
                 className="
-        relative
-        h-[690px]
-        w-[340px]
-        rounded-[42px]
-        border
-        border-white/10
-        bg-[#141A23]
-        shadow-[0_60px_140px_rgba(0,0,0,0.75)]
-        overflow-hidden
-    "
+                    relative
+                    h-[690px]
+                    w-[340px]
+                    overflow-hidden
+                    rounded-[42px]
+                    border
+                    border-white/10
+                    bg-[#141A23]
+                    shadow-[0_60px_140px_rgba(0,0,0,0.75)]
+                "
             >
-                {/* Reflection */}
+                {/* Animated Reflection */}
 
-                <div
+                <motion.div
+                    animate={{
+                        opacity: [0.04, 0.09, 0.04],
+                    }}
+                    transition={{
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                    }}
                     className="
-          absolute
-          inset-0
-          bg-gradient-to-br
-          from-white/[0.06]
-          via-transparent
-          to-transparent
-          pointer-events-none
-        "
+                        pointer-events-none
+                        absolute
+                        inset-0
+                        bg-gradient-to-br
+                        from-white/[0.08]
+                        via-transparent
+                        to-transparent
+                    "
                 />
 
                 {/* Screen */}
 
                 <div className="flex h-full flex-col bg-gradient-to-b from-[#1A2230] to-[#111827]">
-
                     <StatusBar />
 
                     <AnimatePresence mode="wait">
@@ -112,7 +185,6 @@ export default function PhoneMockup() {
                             />
                         </motion.div>
                     </AnimatePresence>
-
                 </div>
             </div>
         </motion.div>

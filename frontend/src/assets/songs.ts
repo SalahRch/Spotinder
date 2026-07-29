@@ -2,6 +2,7 @@ import AM from "./albums/505.jpg";
 import Blonde from "./albums/nights.jpg";
 import Rumours from "./albums/dreams.jpg";
 import AfterHours from "./albums/after-hours.jpg";
+import Promise from "./albums/promise.jpg";
 
 export const songs = [
     {
@@ -27,5 +28,11 @@ export const songs = [
         artist: "The Weeknd",
         genre: "Synth Pop",
         cover: AfterHours,
+    },
+    {
+        title: "Promise",
+        artist: "slayr",
+        genre: "Underground Rap",
+        cover: Promise,
     },
 ];
