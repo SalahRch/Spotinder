@@ -9,6 +9,10 @@ public record PlaylistResponse(
 
         String name,
 
+        String spotifyPlaylistId,
+
+        String spotifyUrl,
+
         List<String> tracks
 
 ) {}

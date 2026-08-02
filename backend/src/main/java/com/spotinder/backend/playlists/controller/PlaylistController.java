@@ -16,14 +16,12 @@ public class PlaylistController {
         this.playlistService = playlistService;
     }
 
-    @PostMapping("/{spotifyId}")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public PlaylistResponse createPlaylist(
-            @PathVariable String spotifyId,
             @RequestBody PlaylistRequest request
     ) {
         return playlistService.createPlaylist(
-                spotifyId,
                 request
         );
     }

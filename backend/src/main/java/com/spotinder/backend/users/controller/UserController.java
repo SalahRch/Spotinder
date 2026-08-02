@@ -28,27 +28,21 @@ public class UserController {
 
     }
 
-    @GetMapping("/{spotifyId}")
-    public UserResponse getUser(
-            @PathVariable String spotifyId
-    ) {
+    @GetMapping("/me")
+    public UserResponse getUser() {
 
-        return userService.getUserBySpotifyId(spotifyId);
+        return userService.getCurrentUser();
 
     }
 
-    @PatchMapping("/{spotifyId}/preferences")
+    @PatchMapping("/me/preferences")
     public UserResponse updatePreferences(
-
-            @PathVariable String spotifyId,
-
             @Valid
             @RequestBody UserPreferencesRequest request
 
     ) {
 
         return userService.updatePreferences(
-                spotifyId,
                 request
         );
 

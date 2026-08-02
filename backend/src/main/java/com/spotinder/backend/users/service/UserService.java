@@ -2,6 +2,7 @@ package com.spotinder.backend.users.service;
 
 import com.spotinder.backend.common.exception.ResourceAlreadyExistsException;
 import com.spotinder.backend.common.exception.ResourceNotFoundException;
+import com.spotinder.backend.common.service.CurrentUserService;
 import com.spotinder.backend.users.dto.UserPreferencesRequest;
 import com.spotinder.backend.users.dto.UserRequest;
 import com.spotinder.backend.users.dto.UserResponse;
@@ -14,9 +15,11 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, CurrentUserService currentUserService) {
         this.userRepository = userRepository;
+        this.currentUserService = currentUserService;
     }
 
     public UserResponse createUser(UserRequest request) {
@@ -42,23 +45,18 @@ public class UserService {
         return toResponse(savedUser);
     }
 
-    public UserResponse getUserBySpotifyId(String spotifyId) {
+    public UserResponse getCurrentUser() {
 
-        User user = userRepository.findBySpotifyId(spotifyId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found."));
+        User user = currentUserService.getCurrentUser();
 
         return toResponse(user);
     }
 
     public UserResponse updatePreferences(
-            String spotifyId,
             UserPreferencesRequest request
     ) {
 
-        User user = userRepository.findBySpotifyId(spotifyId)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("User not found."));
+        User user = currentUserService.getCurrentUser();
 
         if (request.adventureLevel() != null) {
             user.setAdventureLevel(request.adventureLevel());

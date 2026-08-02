@@ -1,6 +1,7 @@
 package com.spotinder.backend.swipes.service;
 
 import com.spotinder.backend.common.exception.ResourceNotFoundException;
+import com.spotinder.backend.common.service.CurrentUserService;
 import com.spotinder.backend.swipes.dto.SwipeRequest;
 import com.spotinder.backend.swipes.dto.SwipeResponse;
 import com.spotinder.backend.swipes.entity.Swipe;
@@ -12,19 +13,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class SwipeService {
 
-    private final UserRepository userRepository;
+
+    private final CurrentUserService currentUserService;
     private final SwipeRepository swipeRepository;
 
-    public SwipeService(UserRepository userRepository, SwipeRepository swipeRepository) {
-        this.userRepository = userRepository;
+    public SwipeService(CurrentUserService currentUserService, SwipeRepository swipeRepository) {
+        this.currentUserService = currentUserService;
         this.swipeRepository = swipeRepository;
     }
 
-    public SwipeResponse recordSwipe(String spotifyId, SwipeRequest request) {
+    public SwipeResponse recordSwipe(SwipeRequest request) {
 
-        User user = userRepository.findBySpotifyId(spotifyId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
+        User user = currentUserService.getCurrentUser();
 
         Swipe swipe = swipeRepository
                 .findByUserIdAndSpotifyTrackId(user.getSpotifyId(), request.spotifyTrackId())

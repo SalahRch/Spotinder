@@ -2,16 +2,18 @@ package com.spotinder.backend.playlists.service;
 
 import com.spotinder.backend.common.enums.SwipeDirection;
 import com.spotinder.backend.common.exception.ResourceNotFoundException;
+import com.spotinder.backend.common.service.CurrentUserService;
 import com.spotinder.backend.playlists.dto.PlaylistRequest;
 import com.spotinder.backend.playlists.dto.PlaylistResponse;
 import com.spotinder.backend.playlists.entity.Playlist;
 import com.spotinder.backend.playlists.entity.PlaylistTrack;
 import com.spotinder.backend.playlists.repository.PlaylistRepository;
 import com.spotinder.backend.playlists.repository.PlaylistTrackRepository;
+import com.spotinder.backend.spotify.dto.playlist.CreatePlaylistResponse;
+import com.spotinder.backend.spotify.service.SpotifyService;
 import com.spotinder.backend.swipes.entity.Swipe;
 import com.spotinder.backend.swipes.repository.SwipeRepository;
 import com.spotinder.backend.users.entity.User;
-import com.spotinder.backend.users.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,18 +22,20 @@ import java.util.List;
 @Service
 public class PlaylistService {
 
-    private final UserRepository userRepository;
+    private final SpotifyService spotifyService;
+    private final CurrentUserService currentUserService;
     private final SwipeRepository swipeRepository;
     private final PlaylistRepository playlistRepository;
     private final PlaylistTrackRepository playlistTrackRepository;
 
     public PlaylistService(
-            UserRepository userRepository,
+            SpotifyService spotifyService, CurrentUserService currentUserService,
             SwipeRepository swipeRepository,
             PlaylistRepository playlistRepository,
             PlaylistTrackRepository playlistTrackRepository
     ) {
-        this.userRepository = userRepository;
+        this.spotifyService = spotifyService;
+        this.currentUserService = currentUserService;
         this.swipeRepository = swipeRepository;
         this.playlistRepository = playlistRepository;
         this.playlistTrackRepository = playlistTrackRepository;
@@ -39,14 +43,11 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistResponse createPlaylist(
-            String spotifyId,
             PlaylistRequest request
     ) {
 
-        User user = userRepository
-                .findBySpotifyId(spotifyId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
+        User user =
+                currentUserService.getCurrentUser();
 
         List<Swipe> likedSongs = swipeRepository.findByUserIdAndDirection(
                 user.getSpotifyId(),
@@ -82,13 +83,31 @@ public class PlaylistService {
 
         playlistTrackRepository.saveAll(playlistTracks);
 
+
         List<String> tracks = likedSongs.stream()
                 .map(Swipe::getSpotifyTrackId)
                 .toList();
 
+        CreatePlaylistResponse spotifyPlaylist =
+                spotifyService.createPlaylist(
+                        user.getSpotifyId(),
+                        request.name()
+                );
+
+        spotifyService.addTracksToPlaylist(
+                spotifyPlaylist.id(),
+                tracks
+        );
+
+        playlist.setSpotifyPlaylistId(
+                spotifyPlaylist.id()
+        );
+
         return new PlaylistResponse(
                 playlist.getId(),
                 playlist.getName(),
+                spotifyPlaylist.id(),
+                spotifyPlaylist.externalUrls().spotify(),
                 tracks
         );
     }

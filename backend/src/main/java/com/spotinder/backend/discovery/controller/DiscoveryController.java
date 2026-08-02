@@ -16,11 +16,9 @@ public class DiscoveryController {
         this.discoveryService = discoveryService;
     }
 
-    @GetMapping("/{spotifyId}")
-    public List<SongResponse> discover(
-            @PathVariable String spotifyId
-    ) {
-        return discoveryService.discover(spotifyId);
+    @GetMapping
+    public List<SongResponse> discover(){
+        return discoveryService.discover();
     }
 
 }

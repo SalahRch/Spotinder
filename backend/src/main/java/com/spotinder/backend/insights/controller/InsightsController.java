@@ -14,11 +14,9 @@ public class InsightsController {
         this.insightsService = insightsService;
     }
 
-    @GetMapping("/{spotifyId}")
-    public InsightsResponse getInsights(
-            @PathVariable String spotifyId
-    ) {
-        return insightsService.getInsights(spotifyId);
+    @GetMapping
+    public InsightsResponse getInsights() {
+        return insightsService.getInsights();
     }
 
 }
