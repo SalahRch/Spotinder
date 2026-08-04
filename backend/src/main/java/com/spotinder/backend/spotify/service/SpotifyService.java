@@ -107,7 +107,6 @@ public class SpotifyService {
 
         String accessToken = spotifyTokenService.getAccessToken();
 
-        System.out.println("Bearer :" + accessToken);
 
         SpotifyUserProfile user = restClient.get()
                 .uri("https://api.spotify.com/v1/me")
@@ -127,9 +126,6 @@ public class SpotifyService {
 
         String accessToken = spotifyTokenService.getAccessToken();
 
-        System.out.println("Access Token: " + accessToken);
-
-        System.out.println("User ID: " + userId);
 
         CreatePlaylistRequest request = new CreatePlaylistRequest(
                 name,

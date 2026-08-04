@@ -27,7 +27,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             Authentication authentication
     ) throws IOException, ServletException {
 
-        System.out.println("OAuth Success Handler reached!");
 
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
 
@@ -36,7 +35,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         getRedirectStrategy().sendRedirect(
                 request,
                 response,
-                "http://localhost:3000"
+                "http://127.0.0.1:5173"
         );
     }
 }

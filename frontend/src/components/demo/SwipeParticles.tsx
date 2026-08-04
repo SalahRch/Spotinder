@@ -27,7 +27,8 @@ export default function SwipeParticles({
                 particles.map((_, i) => {
 
                     const angle =
-                        (Math.random() - .5) * 100;
+                        (Math.random() - 0.5) *
+                        (Math.PI * 0.75);
 
                     const distance =
                         120 + Math.random() * 120;

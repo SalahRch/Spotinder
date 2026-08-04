@@ -19,7 +19,7 @@ public class SwipeController {
 
     @PostMapping
     public SwipeResponse recordSwipe(
-            @RequestBody SwipeRequest request
+            @Valid @RequestBody SwipeRequest request
     ) {
         return swipeService.recordSwipe(request);
     }

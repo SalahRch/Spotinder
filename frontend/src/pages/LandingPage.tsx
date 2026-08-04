@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import {
     motion,
     useMotionValue,
     useSpring,
 } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 import Logo from "../components/common/Logo";
 import Navbar from "../components/common/Navbar";
@@ -18,9 +20,18 @@ import WhySpotinder from "../components/sections/WhySpotinder";
 import LiveDemo from "../components/sections/LiveDemo";
 import FinalCTA from "../components/sections/FinalCTA";
 import Footer from "../components/sections/Footer";
-import CursorGlow from "../components/common/CursorGlow.tsx";
+import CursorGlow from "../components/common/CursorGlow";
+
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 export default function LandingPage() {
+    const navigate = useNavigate();
+
+    const {
+        login,
+        isAuthenticated,
+        isLoading,
+    } = useAuth();
 
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
@@ -35,12 +46,28 @@ export default function LandingPage() {
         damping: 20,
     });
 
+    useEffect(() => {
+        if (!isLoading && isAuthenticated) {
+            navigate("/app/discover", {
+                replace: true,
+            });
+        }
+    }, [
+        isAuthenticated,
+        isLoading,
+        navigate,
+    ]);
+
+    const handleSpotifyContinue = () => {
+        if (isLoading || isAuthenticated) {
+            return;
+        }
+
+        login();
+    };
+
     return (
-
-        <main
-            className="bg-[#0B0F17] text-white"
-        >
-
+        <main className="bg-[#0B0F17] text-white">
             <CursorGlow />
 
             {/* ================= HERO ================= */}
@@ -50,11 +77,10 @@ export default function LandingPage() {
                 className="
                     relative
                     isolate
-                    overflow-hidden
                     min-h-screen
+                    overflow-hidden
                 "
             >
-
                 <Navbar />
 
                 {/* Background Glow */}
@@ -93,7 +119,6 @@ export default function LandingPage() {
                 />
 
                 <FadeInSection>
-
                     <div
                         className="
                             relative
@@ -106,16 +131,14 @@ export default function LandingPage() {
                             items-center
                             justify-center
                             px-6
-                            pt-24
                             pb-24
+                            pt-24
                             text-center
                         "
                     >
-
                         <Logo />
 
                         <div className="mt-8 max-w-2xl">
-
                             <h2 className="text-3xl font-semibold tracking-tight text-slate-100 md:text-5xl">
                                 Discover music beyond the algorithm.
                             </h2>
@@ -128,31 +151,24 @@ export default function LandingPage() {
                                     {" "}Just discovery.
                                 </span>
                             </p>
-
                         </div>
 
                         <div className="mt-12">
-
-                            <SpotifyButton />
-
+                            <SpotifyButton
+                                onClick={handleSpotifyContinue}
+                                disabled={isLoading || isAuthenticated}
+                            />
                         </div>
 
                         <div className="mt-10">
-
                             <PhoneMockup />
-
                         </div>
 
                         <p className="mt-5 text-sm text-slate-500">
-
                             No Spotify Premium required.
-
                         </p>
-
                     </div>
-
                 </FadeInSection>
-
             </section>
 
             {/* ================= HOW IT WORKS ================= */}
@@ -180,9 +196,7 @@ export default function LandingPage() {
             {/* ================= FOOTER ================= */}
 
             <Footer />
-
         </main>
-
     );
-
 }
+
