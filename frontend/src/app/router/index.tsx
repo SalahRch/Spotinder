@@ -6,6 +6,8 @@ import ProtectedRoute from "@/app/guards/ProtectedRoute";
 import AppLayout from "@/app/layouts/AppLayout";
 
 import DiscoverPage from "@/features/discovery/pages/DiscoverPage";
+import LikesPage from "@/features/likes/pages/LikesPage.tsx";
+import InsightsPage from "@/features/insights/pages/InsightsPage.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -26,6 +28,14 @@ export const router = createBrowserRouter([
                     {
                         path: "discover",
                         element: <DiscoverPage />,
+                    },
+                    {
+                        path: "likes",
+                        element: <LikesPage/>,
+                    },
+                    {
+                        path: "insights",
+                        element: <InsightsPage/>,
                     },
                 ],
             },

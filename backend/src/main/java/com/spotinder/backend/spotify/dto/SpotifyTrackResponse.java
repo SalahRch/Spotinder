@@ -5,6 +5,7 @@ public record SpotifyTrackResponse(
         String id,
         String title,
         String artist,
-        String albumImage
+        String albumImage,
+        String previewUrl
 
 ) {}

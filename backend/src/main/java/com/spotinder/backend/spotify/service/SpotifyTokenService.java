@@ -2,37 +2,62 @@ package com.spotinder.backend.spotify.service;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SpotifyTokenService {
 
-    private final OAuth2AuthorizedClientService authorizedClientService;
+    private final OAuth2AuthorizedClientManager authorizedClientManager;
 
     public SpotifyTokenService(
-            OAuth2AuthorizedClientService authorizedClientService
+            OAuth2AuthorizedClientManager authorizedClientManager
     ) {
-        this.authorizedClientService = authorizedClientService;
+        this.authorizedClientManager = authorizedClientManager;
     }
 
     public String getAccessToken() {
-
         Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-        OAuth2AuthenticationToken oauthToken =
-                (OAuth2AuthenticationToken) authentication;
+        if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
+            throw new IllegalStateException(
+                    "The current user is not authenticated through Spotify."
+            );
+        }
 
-        OAuth2AuthorizedClient client =
-                authorizedClientService.loadAuthorizedClient(
-                        oauthToken.getAuthorizedClientRegistrationId(),
-                        oauthToken.getName()
-                );
+        OAuth2AuthorizeRequest authorizeRequest =
+                OAuth2AuthorizeRequest
+                        .withClientRegistrationId(
+                                oauthToken.getAuthorizedClientRegistrationId()
+                        )
+                        .principal(authentication)
+                        .build();
+
+        OAuth2AuthorizedClient authorizedClient =
+                authorizedClientManager.authorize(authorizeRequest);
 
 
-        return client.getAccessToken().getTokenValue();
+
+        if (
+                authorizedClient == null ||
+                        authorizedClient.getAccessToken() == null
+        ) {
+            throw new IllegalStateException(
+                    "Spotify authorization is unavailable. "
+                            + "Please reconnect your Spotify account."
+            );
+        }
+
+        System.out.println("Bearer" + authorizedClient.getAccessToken().getTokenValue());
+
+        return authorizedClient
+                .getAccessToken()
+                .getTokenValue();
     }
 }

@@ -16,13 +16,12 @@ import java.util.stream.Stream;
 @Service
 public class DiscoveryService {
 
-    private final SpotifyTrackMapper spotifyTrackMapper;
+
     private final RecommendationEngine recommendationEngine;
     private final SpotifyService spotifyService;
     private final CurrentUserService currentUserService;
 
-    public DiscoveryService(SpotifyTrackMapper spotifyTrackMapper, RecommendationEngine recommendationEngine, SpotifyService spotifyService, CurrentUserService currentUserService) {
-        this.spotifyTrackMapper = spotifyTrackMapper;
+    public DiscoveryService(RecommendationEngine recommendationEngine, SpotifyService spotifyService, CurrentUserService currentUserService) {
         this.recommendationEngine = recommendationEngine;
         this.spotifyService = spotifyService;
         this.currentUserService = currentUserService;
@@ -48,7 +47,8 @@ public class DiscoveryService {
                                 track.id(),
                                 track.title(),
                                 track.artist(),
-                                track.albumImage()
+                                track.albumImage(),
+                                track.previewUrl()
                         ),
                         (existing, ignored) -> existing
                 ))

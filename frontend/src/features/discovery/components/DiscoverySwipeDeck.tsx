@@ -1,5 +1,6 @@
 import {
     forwardRef,
+    useCallback,
     useImperativeHandle,
     useRef,
     useState,
@@ -29,6 +30,16 @@ export type DiscoverySwipeDeckHandle = {
 type DiscoverySwipeDeckProps = {
     recommendations: Recommendation[];
     blindMode?: boolean;
+
+    onPlay?: (
+        recommendation: Recommendation,
+    ) => Promise<void> | void;
+
+    currentTrackId?: string | null;
+    isPlaying?: boolean;
+    position?: number;
+    duration?: number;
+
     onSwipe?: (
         direction: SwipeDirection,
         recommendation: Recommendation,
@@ -42,17 +53,37 @@ const DiscoverySwipeDeck = forwardRef<
     {
         recommendations,
         blindMode = false,
+
+        onPlay,
+
+        currentTrackId = null,
+        isPlaying = false,
+        position = 0,
+        duration = 0,
+
         onSwipe,
     },
     ref,
 ) {
-    const [index, setIndex] = useState(0);
+    const [index, setIndex] =
+        useState(0);
 
-    const [swipeDirection, setSwipeDirection] =
-        useState<SwipeDirection | null>(null);
+    const [
+        swipeDirection,
+        setSwipeDirection,
+    ] = useState<SwipeDirection | null>(
+        null,
+    );
+
+    const [
+        dragProgress,
+        setDragProgress,
+    ] = useState(0);
 
     const currentCardRef =
-        useRef<DiscoverySwipeCardHandle>(null);
+        useRef<DiscoverySwipeCardHandle>(
+            null,
+        );
 
     const currentRecommendation =
         recommendations[index];
@@ -63,25 +94,41 @@ const DiscoverySwipeDeck = forwardRef<
     const thirdRecommendation =
         recommendations[index + 2];
 
-    const handleSwipe = async (
-        direction: SwipeDirection,
-        recommendation: Recommendation,
-    ) => {
-        setSwipeDirection(direction);
+    const handleSwipe = useCallback(
+        (
+            direction: SwipeDirection,
+            recommendation: Recommendation,
+        ) => {
+            setSwipeDirection(direction);
 
-        try {
-            await onSwipe?.(
-                direction,
-                recommendation,
+            // Advance the interface immediately.
+            setIndex(
+                (current) => current + 1,
             );
-        } finally {
-            setIndex((current) => current + 1);
+
+            setDragProgress(0);
+
+            // Persist swipe in the background.
+            void Promise.resolve(
+                onSwipe?.(
+                    direction,
+                    recommendation,
+                ),
+            ).catch(
+                (error: unknown) => {
+                    console.error(
+                        "Failed to persist swipe:",
+                        error,
+                    );
+                },
+            );
 
             window.setTimeout(() => {
                 setSwipeDirection(null);
             }, 500);
-        }
-    };
+        },
+        [onSwipe],
+    );
 
     useImperativeHandle(
         ref,
@@ -116,16 +163,21 @@ const DiscoverySwipeDeck = forwardRef<
                 }}
                 transition={{
                     duration: 0.45,
-                    ease: [0.22, 1, 0.36, 1],
+                    ease: [
+                        0.22,
+                        1,
+                        0.36,
+                        1,
+                    ],
                 }}
                 className="
                     flex
-                    min-h-[600px]
+                    h-[560px]
                     w-full
-                    max-w-[500px]
+                    max-w-[460px]
                     items-center
                     justify-center
-                    rounded-[40px]
+                    rounded-[36px]
                     border
                     border-white/[0.07]
                     bg-white/[0.025]
@@ -159,8 +211,9 @@ const DiscoverySwipeDeck = forwardRef<
                             text-slate-400
                         "
                     >
-                        Increase Adventure Mode or return
-                        later for a fresh set of discoveries.
+                        Increase Adventure Mode
+                        or return later for a
+                        fresh set of discoveries.
                     </p>
                 </div>
             </motion.div>
@@ -178,107 +231,163 @@ const DiscoverySwipeDeck = forwardRef<
         <div
             className="
                 relative
-                h-[610px]
+                h-[560px]
                 w-full
-                max-w-[500px]
+                max-w-[460px]
             "
         >
+            {/* Reactive ambient glow */}
+
             <motion.div
                 animate={{
-                    backgroundColor: glowColor,
-                    scale: swipeDirection
-                        ? 1.08
-                        : 1,
-                    opacity: swipeDirection
-                        ? 1
-                        : 0.65,
+                    backgroundColor:
+                    glowColor,
+
+                    scale:
+                        1 +
+                        dragProgress * 0.1,
+
+                    opacity:
+                        0.62 +
+                        dragProgress * 0.38,
                 }}
                 transition={{
-                    duration: 0.4,
+                    duration: 0.18,
                     ease: "easeOut",
                 }}
                 className="
                     pointer-events-none
                     absolute
                     inset-8
-                    rounded-[44px]
-                    blur-[90px]
+                    rounded-[40px]
+                    blur-[85px]
                 "
             />
 
+            {/* Third card */}
+
             {thirdRecommendation && (
                 <motion.div
-                    className="
-                        pointer-events-none
-                        absolute
-                        inset-0
-                    "
+                    key={`third-${thirdRecommendation.id}`}
+                    initial={false}
                     animate={{
-                        scale: 0.89,
-                        y: 28,
-                        opacity: 0.28,
+                        scale:
+                            0.89 +
+                            dragProgress *
+                            0.05,
+
+                        y:
+                            26 -
+                            dragProgress *
+                            13,
+
+                        opacity:
+                            0.25 +
+                            dragProgress *
+                            0.18,
                     }}
                     transition={{
                         type: "spring",
                         stiffness: 220,
                         damping: 25,
                     }}
+                    className="
+                        pointer-events-none
+                        absolute
+                        inset-0
+                    "
                 >
                     <DiscoverySwipeCard
                         recommendation={
                             thirdRecommendation
                         }
-                        blindMode={blindMode}
+                        blindMode={
+                            blindMode
+                        }
+                        backgroundCard
                     />
                 </motion.div>
             )}
 
+            {/* Next card */}
+
             {nextRecommendation && (
                 <motion.div
-                    className="
-                        pointer-events-none
-                        absolute
-                        inset-0
-                    "
+                    key={`next-${nextRecommendation.id}`}
+                    initial={false}
                     animate={{
-                        scale: swipeDirection
-                            ? 1
-                            : 0.94,
-                        y: swipeDirection
-                            ? 0
-                            : 14,
-                        opacity: swipeDirection
-                            ? 1
-                            : 0.62,
+                        scale:
+                            0.94 +
+                            dragProgress *
+                            0.06,
+
+                        y:
+                            13 -
+                            dragProgress *
+                            13,
+
+                        opacity:
+                            0.6 +
+                            dragProgress *
+                            0.4,
                     }}
                     transition={{
                         type: "spring",
                         stiffness: 220,
                         damping: 25,
                     }}
+                    className="
+                        pointer-events-none
+                        absolute
+                        inset-0
+                    "
                 >
                     <DiscoverySwipeCard
                         recommendation={
                             nextRecommendation
                         }
-                        blindMode={blindMode}
+                        blindMode={
+                            blindMode
+                        }
+                        backgroundCard
                     />
                 </motion.div>
             )}
 
+            {/* Current card */}
+
             <AnimatePresence mode="popLayout">
                 <DiscoverySwipeCard
                     ref={currentCardRef}
-                    key={
-                        currentRecommendation
-                            .id
-                    }
+                    key={`${currentRecommendation.id}-${index}`}
                     recommendation={
                         currentRecommendation
                     }
-                    blindMode={blindMode}
+                    blindMode={
+                        blindMode
+                    }
                     draggable
-                    onSwiped={handleSwipe}
+                    onPlay={
+                        onPlay
+                    }
+                    currentTrackId={
+                        currentTrackId
+                    }
+                    isPlaying={
+                        isPlaying
+                    }
+                    position={
+                        position
+                    }
+                    duration={
+                        duration
+                    }
+                    onDragProgress={
+                        setDragProgress
+                    }
+                    onSwiped={
+                        handleSwipe
+                    }
                 />
             </AnimatePresence>
         </div>

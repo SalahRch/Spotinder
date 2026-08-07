@@ -1,12 +1,10 @@
 package com.spotinder.backend.insights.service;
 
 import com.spotinder.backend.common.enums.SwipeDirection;
-import com.spotinder.backend.common.exception.ResourceNotFoundException;
 import com.spotinder.backend.common.service.CurrentUserService;
 import com.spotinder.backend.insights.dto.InsightsResponse;
 import com.spotinder.backend.swipes.repository.SwipeRepository;
 import com.spotinder.backend.users.entity.User;
-import com.spotinder.backend.users.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,40 +17,57 @@ public class InsightsService {
             CurrentUserService currentUserService,
             SwipeRepository swipeRepository
     ) {
-        this.currentUserService = currentUserService;
-        this.swipeRepository = swipeRepository;
+        this.currentUserService =
+                currentUserService;
+
+        this.swipeRepository =
+                swipeRepository;
     }
 
     public InsightsResponse getInsights() {
 
-        User user = currentUserService.getCurrentUser();
+        User user =
+                currentUserService.getCurrentUser();
 
-        long songsLiked = swipeRepository.countByUserIdAndDirection(
-                user.getSpotifyId(),
-                SwipeDirection.RIGHT
-        );
+        long songsLiked =
+                swipeRepository
+                        .countByUserIdAndDirection(
+                                user.getSpotifyId(),
+                                SwipeDirection.RIGHT
+                        );
 
-        long songsPassed = swipeRepository.countByUserIdAndDirection(
-                user.getSpotifyId(),
-                SwipeDirection.LEFT
-        );
+        long songsPassed =
+                swipeRepository
+                        .countByUserIdAndDirection(
+                                user.getSpotifyId(),
+                                SwipeDirection.LEFT
+                        );
 
-        long totalSwipes = swipeRepository.countByUserId(
-                user.getSpotifyId()
-        );
+        long totalSwipes =
+                swipeRepository
+                        .countByUserId(
+                                user.getSpotifyId()
+                        );
 
-        double likeRatio = totalSwipes == 0
-                ? 0
-                : Math.round(
-                ((double) songsLiked / totalSwipes) * 1000
-        ) / 10.0;
+        double likeRatio =
+                totalSwipes == 0
+                        ? 0
+                        : Math.round(
+                        (
+                                (double) songsLiked /
+                                        totalSwipes
+                        ) * 1000
+                ) / 10.0;
 
         int discoveryScore =
                 totalSwipes == 0
                         ? 0
-                        : (int) Math.round(likeRatio * 100);
+                        : (int) Math.round(
+                        likeRatio
+                );
 
         return new InsightsResponse(
+                totalSwipes,
                 songsLiked,
                 songsPassed,
                 likeRatio,

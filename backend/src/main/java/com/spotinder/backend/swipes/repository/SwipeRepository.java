@@ -30,4 +30,9 @@ public interface SwipeRepository extends JpaRepository<Swipe, UUID> {
     long countByUserId(
             String userId
     );
+
+    List<Swipe> findByUserIdAndDirectionOrderByCreatedAtDesc(
+            String userId,
+            SwipeDirection direction
+    );
 }

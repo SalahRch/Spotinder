@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SpotifyService {
@@ -58,7 +59,8 @@ public class SpotifyService {
                                 : track.artists().get(0).name(),
                         track.album().images().isEmpty()
                                 ? null
-                                : track.album().images().get(0).url()
+                                : track.album().images().get(0).url(),
+                        track.previewUrl()
 
                 ))
                 .toList();
@@ -94,7 +96,8 @@ public class SpotifyService {
                                     : track.artists().get(0).name(),
                             track.album().images().isEmpty()
                                     ? null
-                                    : track.album().images().get(0).url()
+                                    : track.album().images().get(0).url(),
+                            track.previewUrl()
 
                     );
 
@@ -169,6 +172,91 @@ public class SpotifyService {
                 .body(request)
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    public void playTrack(
+            String deviceId,
+            String spotifyTrackId
+    ) {
+        String accessToken =
+                spotifyTokenService.getAccessToken();
+
+        Map<String, Object> body = Map.of(
+                "uris",
+                List.of(
+                        "spotify:track:" + spotifyTrackId
+                )
+        );
+
+        restClient.put()
+                .uri(
+                        "https://api.spotify.com/v1/me/player/play?device_id={deviceId}",
+                        deviceId
+                )
+                .header(
+                        "Authorization",
+                        "Bearer " + accessToken
+                )
+                .body(body)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    public List<SpotifyTrackResponse> getTracksByIds(
+            List<String> trackIds
+    ) {
+        if (trackIds.isEmpty()) {
+            return List.of();
+        }
+
+        String accessToken =
+                spotifyTokenService.getAccessToken();
+
+        String ids =
+                String.join(",", trackIds);
+
+        SpotifyTracksResponse response =
+                restClient.get()
+                        .uri(
+                                "https://api.spotify.com/v1/tracks?ids={ids}",
+                                ids
+                        )
+                        .header(
+                                "Authorization",
+                                "Bearer " + accessToken
+                        )
+                        .retrieve()
+                        .body(SpotifyTracksResponse.class);
+
+        if (
+                response == null ||
+                        response.tracks() == null
+        ) {
+            return List.of();
+        }
+
+        return response.tracks()
+                .stream()
+                .filter(track -> track != null)
+                .map(track ->
+                        new SpotifyTrackResponse(
+                                track.id(),
+                                track.name(),
+                                track.artists().isEmpty()
+                                        ? "Unknown Artist"
+                                        : track.artists()
+                                        .get(0)
+                                        .name(),
+                                track.album().images().isEmpty()
+                                        ? null
+                                        : track.album()
+                                        .images()
+                                        .get(0)
+                                        .url(),
+                                track.previewUrl()
+                        )
+                )
+                .toList();
     }
 
 

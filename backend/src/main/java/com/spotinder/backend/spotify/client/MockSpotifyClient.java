@@ -17,21 +17,24 @@ public class MockSpotifyClient implements SpotifyClient {
                         "1",
                         "After Hours",
                         "The Weeknd",
-                        "https://i.scdn.co/image/..."
+                        "https://i.scdn.co/image/...",
+                        ""
                 ),
 
                 new SpotifyTrackResponse(
                         "2",
                         "Nights",
                         "Frank Ocean",
-                        "https://i.scdn.co/image/..."
+                        "https://i.scdn.co/image/...",
+                        ""
                 ),
 
                 new SpotifyTrackResponse(
                         "3",
                         "The Less I Know The Better",
                         "Tame Impala",
-                        "https://i.scdn.co/image/..."
+                        "https://i.scdn.co/image/...",
+                        ""
                 )
 
         );

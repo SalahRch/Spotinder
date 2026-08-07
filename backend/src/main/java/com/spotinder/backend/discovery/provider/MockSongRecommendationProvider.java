@@ -17,19 +17,22 @@ public class MockSongRecommendationProvider implements SongRecommendationProvide
                         "1",
                         "505",
                         "Arctic Monkeys",
-                        "https://i.scdn.co/image/..."
+                        "https://i.scdn.co/image/...",
+                        ""
                 ),
                 new SongResponse(
                         "2",
                         "Nights",
                         "Frank Ocean",
-                        "https://i.scdn.co/image/..."
+                        "https://i.scdn.co/image/...",
+                        ""
                 ),
                 new SongResponse(
                         "3",
                         "The Less I Know The Better",
                         "Tame Impala",
-                        "https://i.scdn.co/image/..."
+                        "https://i.scdn.co/image/...",
+                        ""
                 )
         );
     }

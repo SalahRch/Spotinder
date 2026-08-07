@@ -28,6 +28,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     ) throws IOException, ServletException {
 
 
+        System.out.println("Reached handler ");
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
 
         authService.synchronizeSpotifyUser(oauthUser);

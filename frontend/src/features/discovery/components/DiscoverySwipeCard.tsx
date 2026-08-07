@@ -9,23 +9,44 @@ import {
     motion,
     useAnimationControls,
     useMotionValue,
+    useMotionValueEvent,
     useTransform,
 } from "framer-motion";
 
+import CardTilt from "./CardTilt";
 import RecommendationCard from "./RecommendationCard";
 
 import type { Recommendation } from "../types/discovery";
 
-export type SwipeDirection = "left" | "right";
+export type SwipeDirection =
+    | "left"
+    | "right";
 
 export type DiscoverySwipeCardHandle = {
-    swipe: (direction: SwipeDirection) => Promise<void>;
+    swipe: (
+        direction: SwipeDirection,
+    ) => Promise<void>;
 };
 
 type DiscoverySwipeCardProps = {
     recommendation: Recommendation;
     draggable?: boolean;
     blindMode?: boolean;
+    backgroundCard?: boolean;
+
+    onPlay?: (
+        recommendation: Recommendation,
+    ) => Promise<void> | void;
+
+    currentTrackId?: string | null;
+    isPlaying?: boolean;
+    position?: number;
+    duration?: number;
+
+    onDragProgress?: (
+        progress: number,
+    ) => void;
+
     onSwiped?: (
         direction: SwipeDirection,
         recommendation: Recommendation,
@@ -43,14 +64,27 @@ const DiscoverySwipeCard = forwardRef<
         recommendation,
         draggable = false,
         blindMode = false,
+        backgroundCard = false,
+
+        onPlay,
+
+        currentTrackId = null,
+        isPlaying = false,
+        position = 0,
+        duration = 0,
+
+        onDragProgress,
         onSwiped,
     },
     ref,
 ) {
-    const controls = useAnimationControls();
+    const controls =
+        useAnimationControls();
+
     const x = useMotionValue(0);
 
-    const isSwipingRef = useRef(false);
+    const isSwipingRef =
+        useRef(false);
 
     const rotate = useTransform(
         x,
@@ -82,54 +116,96 @@ const DiscoverySwipeCard = forwardRef<
         [1, 0.82],
     );
 
+    useMotionValueEvent(
+        x,
+        "change",
+        (latest) => {
+            const progress = Math.min(
+                Math.abs(latest) /
+                SWIPE_THRESHOLD,
+                1,
+            );
+
+            onDragProgress?.(progress);
+        },
+    );
+
     const swipeAway = useCallback(
-        async (direction: SwipeDirection) => {
+        async (
+            direction: SwipeDirection,
+        ) => {
             if (isSwipingRef.current) {
                 return;
             }
 
             isSwipingRef.current = true;
 
-            const isRight = direction === "right";
+            const isRight =
+                direction === "right";
 
-            await controls.start({
-                x: isRight
-                    ? EXIT_DISTANCE
-                    : -EXIT_DISTANCE,
-                rotate: isRight ? 20 : -20,
-                opacity: 0,
-                scale: 0.94,
-                transition: {
-                    duration: 0.42,
-                    ease: [0.22, 1, 0.36, 1],
-                },
-            });
+            try {
+                onDragProgress?.(1);
 
-            await onSwiped?.(
-                direction,
-                recommendation,
-            );
+                await controls.start({
+                    x: isRight
+                        ? EXIT_DISTANCE
+                        : -EXIT_DISTANCE,
+                    rotate: isRight
+                        ? 20
+                        : -20,
+                    opacity: 0,
+                    scale: 0.94,
+                    transition: {
+                        duration: 0.42,
+                        ease: [
+                            0.22,
+                            1,
+                            0.36,
+                            1,
+                        ],
+                    },
+                });
+
+                onSwiped?.(
+                    direction,
+                    recommendation,
+                );
+            } catch (error) {
+                isSwipingRef.current = false;
+                onDragProgress?.(0);
+
+                throw error;
+            }
         },
         [
             controls,
+            onDragProgress,
             onSwiped,
             recommendation,
         ],
     );
 
-    const snapBack = useCallback(() => {
-        void controls.start({
-            x: 0,
-            rotate: 0,
-            opacity: 1,
-            scale: 1,
-            transition: {
-                type: "spring",
-                stiffness: 420,
-                damping: 30,
-            },
-        });
-    }, [controls]);
+    const snapBack = useCallback(
+        () => {
+            onDragProgress?.(0);
+
+            void controls.start({
+                x: 0,
+                rotate: 0,
+                opacity: 1,
+                scale: 1,
+                transition: {
+                    type: "spring",
+                    stiffness: 420,
+                    damping: 30,
+                },
+            });
+        },
+        [
+            controls,
+            onDragProgress,
+        ],
+    );
 
     useImperativeHandle(
         ref,
@@ -149,12 +225,21 @@ const DiscoverySwipeCard = forwardRef<
                 justify-center
                 ${
                 draggable
-                    ? "cursor-grab active:cursor-grabbing"
-                    : "pointer-events-none"
+                    ? `
+                            z-20
+                            cursor-grab
+                            pointer-events-auto
+                            active:cursor-grabbing
+                        `
+                    : `
+                            z-0
+                            pointer-events-none
+                        `
             }
             `}
             drag={
-                draggable && !isSwipingRef.current
+                draggable &&
+                !isSwipingRef.current
                     ? "x"
                     : false
             }
@@ -171,9 +256,13 @@ const DiscoverySwipeCard = forwardRef<
                 touchAction: "pan-y",
             }}
             whileDrag={{
-                scale: 1.018,
+                scale: 1.025,
+                y: -4,
             }}
-            onDragEnd={async (_, info) => {
+            onDragEnd={async (
+                _,
+                info,
+            ) => {
                 if (
                     !draggable ||
                     isSwipingRef.current
@@ -181,13 +270,23 @@ const DiscoverySwipeCard = forwardRef<
                     return;
                 }
 
-                if (info.offset.x > SWIPE_THRESHOLD) {
-                    await swipeAway("right");
+                if (
+                    info.offset.x >
+                    SWIPE_THRESHOLD
+                ) {
+                    await swipeAway(
+                        "right",
+                    );
                     return;
                 }
 
-                if (info.offset.x < -SWIPE_THRESHOLD) {
-                    await swipeAway("left");
+                if (
+                    info.offset.x <
+                    -SWIPE_THRESHOLD
+                ) {
+                    await swipeAway(
+                        "left",
+                    );
                     return;
                 }
 
@@ -202,17 +301,17 @@ const DiscoverySwipeCard = forwardRef<
                 className="
                     pointer-events-none
                     absolute
-                    right-10
-                    top-14
-                    z-30
+                    right-8
+                    top-12
+                    z-40
                     rotate-12
                     rounded-xl
                     border-2
                     border-emerald-300
                     bg-emerald-400/10
-                    px-5
+                    px-4
                     py-2
-                    text-2xl
+                    text-xl
                     font-black
                     tracking-[0.18em]
                     text-emerald-300
@@ -231,17 +330,17 @@ const DiscoverySwipeCard = forwardRef<
                 className="
                     pointer-events-none
                     absolute
-                    left-10
-                    top-14
-                    z-30
+                    left-8
+                    top-12
+                    z-40
                     -rotate-12
                     rounded-xl
                     border-2
                     border-rose-300
                     bg-rose-400/10
-                    px-5
+                    px-4
                     py-2
-                    text-2xl
+                    text-xl
                     font-black
                     tracking-[0.18em]
                     text-rose-300
@@ -252,10 +351,31 @@ const DiscoverySwipeCard = forwardRef<
                 PASS
             </motion.div>
 
-            <RecommendationCard
-                recommendation={recommendation}
-                blindMode={blindMode}
-            />
+            {draggable ? (
+                <CardTilt>
+                    <RecommendationCard
+                        recommendation={recommendation}
+                        blindMode={blindMode}
+                        backgroundCard={backgroundCard}
+                        onPlay={onPlay}
+                        currentTrackId={currentTrackId}
+                        isPlaying={isPlaying}
+                        position={position}
+                        duration={duration}
+                    />
+                </CardTilt>
+            ) : (
+                <RecommendationCard
+                    recommendation={recommendation}
+                    blindMode={blindMode}
+                    backgroundCard={backgroundCard}
+                    onPlay={onPlay}
+                    currentTrackId={currentTrackId}
+                    isPlaying={isPlaying}
+                    position={position}
+                    duration={duration}
+                />
+            )}
         </motion.div>
     );
 });

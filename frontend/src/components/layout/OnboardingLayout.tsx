@@ -2,9 +2,9 @@ import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
 import type { MouseEvent } from "react";
 
-import Logo from "../components/common/Logo";
-import CursorGlow from "../components/common/CursorGlow";
-import FloatingAlbums from "../components/common/FloatingAlbums";
+import Logo from "@/components/common/Logo";
+import CursorGlow from "@/components/common/CursorGlow";
+import FloatingAlbums from "@/components/common/FloatingAlbums";
 
 export default function OnboardingLayout() {
 
