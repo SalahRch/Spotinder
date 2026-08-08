@@ -34,6 +34,7 @@ export default function LikesPage() {
     ) => {
         await player.toggleTrack(
             song,
+            "likes",
         );
     };
 

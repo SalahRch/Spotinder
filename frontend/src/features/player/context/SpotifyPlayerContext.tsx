@@ -20,6 +20,10 @@ export type PlayerTrack = {
     albumImage: string | null;
 };
 
+export type PlaybackSource =
+    | "discover"
+    | "likes";
+
 type SpotifyPlayerContextValue = {
     currentTrack: PlayerTrack | null;
 
@@ -27,15 +31,19 @@ type SpotifyPlayerContextValue = {
     isReady: boolean;
     isPlaying: boolean;
 
+    playbackSource: PlaybackSource | null;
+
     position: number;
     duration: number;
 
     playTrack: (
         track: PlayerTrack,
+        source: PlaybackSource,
     ) => Promise<void>;
 
     toggleTrack: (
         track: PlayerTrack,
+        source: PlaybackSource,
     ) => Promise<void>;
 
     pause: () => Promise<void>;
@@ -70,8 +78,16 @@ export function SpotifyPlayerProvider({
         null,
     );
 
+    const [
+        playbackSource,
+        setPlaybackSource,
+    ] = useState<PlaybackSource | null>(
+        null,
+    );
+
     const playTrack = async (
         track: PlayerTrack,
+        source: PlaybackSource,
     ) => {
         if (!spotifyPlayer.deviceId) {
             toast.error(
@@ -91,6 +107,7 @@ export function SpotifyPlayerProvider({
             });
 
             setCurrentTrack(track);
+            setPlaybackSource(source);
         } catch (error) {
             console.error(
                 "Unable to start Spotify playback:",
@@ -105,6 +122,7 @@ export function SpotifyPlayerProvider({
 
     const toggleTrack = async (
         track: PlayerTrack,
+        source: PlaybackSource,
     ) => {
         const sameTrack =
             spotifyPlayer.currentTrackId ===
@@ -115,7 +133,11 @@ export function SpotifyPlayerProvider({
                 sameTrack &&
                 spotifyPlayer.isPlaying
             ) {
+                setCurrentTrack(track);
+                setPlaybackSource(source);
+
                 await spotifyPlayer.pause();
+
                 return;
             }
 
@@ -126,19 +148,19 @@ export function SpotifyPlayerProvider({
                 await spotifyPlayer.resume();
 
                 setCurrentTrack(track);
+                setPlaybackSource(source);
 
                 return;
             }
 
-            await playTrack(track);
+            await playTrack(
+                track,
+                source,
+            );
         } catch (error) {
             console.error(
                 "Unable to control Spotify playback:",
                 error,
-            );
-
-            toast.error(
-                "We couldn't control playback.",
             );
         }
     };
@@ -156,12 +178,15 @@ export function SpotifyPlayerProvider({
         }
 
         setCurrentTrack(null);
+        setPlaybackSource(null);
     };
 
     return (
         <SpotifyPlayerContext.Provider
             value={{
                 currentTrack,
+
+                playbackSource,
 
                 deviceId:
                 spotifyPlayer.deviceId,
