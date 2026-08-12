@@ -40,11 +40,15 @@ type DiscoverySwipeDeckProps = {
     position?: number;
     duration?: number;
 
+
     onSwipe?: (
         direction: SwipeDirection,
         recommendation: Recommendation,
     ) => Promise<void> | void;
 };
+
+const DISCOVERY_INDEX_KEY =
+    "spotinder-discovery-index";
 
 const DiscoverySwipeDeck = forwardRef<
     DiscoverySwipeDeckHandle,
@@ -65,8 +69,27 @@ const DiscoverySwipeDeck = forwardRef<
     },
     ref,
 ) {
+
     const [index, setIndex] =
-        useState(0);
+        useState(() => {
+            const savedIndex =
+                sessionStorage.getItem(
+                    DISCOVERY_INDEX_KEY,
+                );
+
+            if (!savedIndex) {
+                return 0;
+            }
+
+            const parsedIndex =
+                Number(savedIndex);
+
+            return Number.isFinite(
+                parsedIndex,
+            )
+                ? parsedIndex
+                : 0;
+        });
 
     const [
         swipeDirection,
@@ -102,11 +125,20 @@ const DiscoverySwipeDeck = forwardRef<
             setSwipeDirection(direction);
 
             // Advance the interface immediately.
-            setIndex(
-                (current) => current + 1,
-            );
+            setIndex((current) => {
+                const nextIndex =
+                    current + 1;
+
+                sessionStorage.setItem(
+                    DISCOVERY_INDEX_KEY,
+                    String(nextIndex),
+                );
+
+                return nextIndex;
+            });
 
             setDragProgress(0);
+
 
             // Persist swipe in the background.
             void Promise.resolve(
@@ -127,7 +159,9 @@ const DiscoverySwipeDeck = forwardRef<
                 setSwipeDirection(null);
             }, 500);
         },
-        [onSwipe],
+        [
+            onSwipe,
+        ],
     );
 
     useImperativeHandle(
@@ -172,7 +206,7 @@ const DiscoverySwipeDeck = forwardRef<
                 }}
                 className="
                     flex
-                    h-[560px]
+                    h-[550px]
                     w-full
                     max-w-[460px]
                     items-center
@@ -382,9 +416,9 @@ const DiscoverySwipeDeck = forwardRef<
                     duration={
                         duration
                     }
-                    onDragProgress={
-                        setDragProgress
-                    }
+                    onDragProgress={(progress) => {
+                        setDragProgress(progress);
+                    }}
                     onSwiped={
                         handleSwipe
                     }

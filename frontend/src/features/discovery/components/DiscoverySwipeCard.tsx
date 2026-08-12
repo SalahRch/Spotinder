@@ -3,9 +3,11 @@ import {
     useCallback,
     useImperativeHandle,
     useRef,
+    useState,
 } from "react";
 
 import {
+    animate,
     motion,
     useAnimationControls,
     useMotionValue,
@@ -47,6 +49,7 @@ type DiscoverySwipeCardProps = {
         progress: number,
     ) => void;
 
+
     onSwiped?: (
         direction: SwipeDirection,
         recommendation: Recommendation,
@@ -85,6 +88,22 @@ const DiscoverySwipeCard = forwardRef<
 
     const isSwipingRef =
         useRef(false);
+
+    const [
+        blindRevealed,
+        setBlindRevealed,
+    ] = useState(false);
+
+    const [
+        revealDirection,
+        setRevealDirection,
+    ] = useState<SwipeDirection | null>(
+        null,
+    );
+
+    const effectiveBlindMode =
+        blindMode &&
+        !blindRevealed;
 
     const rotate = useTransform(
         x,
@@ -143,6 +162,56 @@ const DiscoverySwipeCard = forwardRef<
             const isRight =
                 direction === "right";
 
+            if (blindMode) {
+                /*
+                 * The decision has been committed.
+                 * Hide drag feedback first.
+                 */
+                setRevealDirection(direction);
+
+                onDragProgress?.(0);
+
+                /*
+                 * Bring the card back to center before revealing it.
+                 * rotate is derived from x, so it recenters too.
+                 */
+                await animate(
+                    x,
+                    0,
+                    {
+                        duration: 0.18,
+                        ease: [0.22, 1, 0.36, 1],
+                    },
+                );
+
+                /*
+                 * Now reveal the identity.
+                 */
+                setBlindRevealed(true);
+
+                await controls.start({
+                    scale: 1.018,
+                    y: -3,
+                    transition: {
+                        duration: 0.2,
+                        ease: [0.22, 1, 0.36, 1],
+                    },
+                });
+
+                /*
+                 * Give the user a short moment
+                 * to register what they chose.
+                 */
+                await new Promise<void>(
+                    (resolve) => {
+                        window.setTimeout(
+                            resolve,
+                            560,
+                        );
+                    },
+                );
+            }
+
             try {
                 onDragProgress?.(1);
 
@@ -178,16 +247,19 @@ const DiscoverySwipeCard = forwardRef<
             }
         },
         [
+            blindMode,
             controls,
             onDragProgress,
             onSwiped,
             recommendation,
+            x,
         ],
     );
 
     const snapBack = useCallback(
         () => {
             onDragProgress?.(0);
+
 
             void controls.start({
                 x: 0,
@@ -293,69 +365,131 @@ const DiscoverySwipeCard = forwardRef<
                 snapBack();
             }}
         >
-            <motion.div
-                style={{
-                    opacity: likeOpacity,
-                    scale: likeScale,
-                }}
-                className="
-                    pointer-events-none
-                    absolute
-                    right-8
-                    top-12
-                    z-40
-                    rotate-12
-                    rounded-xl
-                    border-2
-                    border-emerald-300
-                    bg-emerald-400/10
-                    px-4
-                    py-2
-                    text-xl
-                    font-black
-                    tracking-[0.18em]
-                    text-emerald-300
-                    shadow-[0_0_35px_rgba(52,211,153,0.18)]
-                    backdrop-blur-md
-                "
-            >
-                LIKE
-            </motion.div>
+            {blindRevealed &&
+                revealDirection && (
+                    <motion.div
+                        initial={{
+                            opacity: 0,
+                            y: 10,
+                            scale: 0.9,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                        }}
+                        transition={{
+                            duration: 0.24,
+                            ease: [0.22, 1, 0.36, 1],
+                        }}
+                        className={`
+                pointer-events-none
+                absolute
+                left-1/2
+                top-10
+                z-50
+                -translate-x-1/2
+                rounded-full
+                border
+                px-4
+                py-2
+                text-[11px]
+                font-semibold
+                uppercase
+                tracking-[0.22em]
+                shadow-xl
+                backdrop-blur-xl
 
-            <motion.div
-                style={{
-                    opacity: passOpacity,
-                    scale: passScale,
-                }}
-                className="
-                    pointer-events-none
-                    absolute
-                    left-8
-                    top-12
-                    z-40
-                    -rotate-12
-                    rounded-xl
-                    border-2
-                    border-rose-300
-                    bg-rose-400/10
-                    px-4
-                    py-2
-                    text-xl
-                    font-black
-                    tracking-[0.18em]
-                    text-rose-300
-                    shadow-[0_0_35px_rgba(251,113,133,0.18)]
-                    backdrop-blur-md
-                "
-            >
-                PASS
-            </motion.div>
+                ${
+                            revealDirection ===
+                            "right"
+                                ? `
+                            border-emerald-400/25
+                            bg-emerald-400/10
+                            text-emerald-300
+                            shadow-[0_0_30px_rgba(52,211,153,0.14)]
+                        `
+                                : `
+                            border-rose-400/25
+                            bg-rose-400/10
+                            text-rose-300
+                            shadow-[0_0_30px_rgba(251,113,133,0.14)]
+                        `
+                        }
+            `}
+                    >
+                        {revealDirection === "right"
+                            ? "Liked"
+                            : "Passed"}
+                    </motion.div>
+                )}
+            {!revealDirection && (
+                <motion.div
+                    style={{
+                        opacity: likeOpacity,
+                        scale: likeScale,
+                    }}
+                    className="
+            pointer-events-none
+            absolute
+            right-8
+            top-12
+            z-40
+            rotate-12
+            rounded-xl
+            border-2
+            border-emerald-300
+            bg-emerald-400/10
+            px-4
+            py-2
+            text-xl
+            font-black
+            tracking-[0.18em]
+            text-emerald-300
+            shadow-[0_0_35px_rgba(52,211,153,0.18)]
+            backdrop-blur-md
+        "
+                >
+                    LIKE
+                </motion.div>
+            )}
+
+            {!revealDirection && (
+                <motion.div
+                    style={{
+                        opacity: passOpacity,
+                        scale: passScale,
+                    }}
+                    className="
+            pointer-events-none
+            absolute
+            left-8
+            top-12
+            z-40
+            -rotate-12
+            rounded-xl
+            border-2
+            border-rose-300
+            bg-rose-400/10
+            px-4
+            py-2
+            text-xl
+            font-black
+            tracking-[0.18em]
+            text-rose-300
+            shadow-[0_0_35px_rgba(251,113,133,0.18)]
+            backdrop-blur-md
+        "
+                >
+                    PASS
+                </motion.div>
+            )}
 
             {draggable ? (
                 <CardTilt>
                     <RecommendationCard
                         recommendation={recommendation}
-                        blindMode={blindMode}
+                        blindMode={effectiveBlindMode}
                         backgroundCard={backgroundCard}
                         onPlay={onPlay}
                         currentTrackId={currentTrackId}
@@ -367,7 +501,7 @@ const DiscoverySwipeCard = forwardRef<
             ) : (
                 <RecommendationCard
                     recommendation={recommendation}
-                    blindMode={blindMode}
+                    blindMode={effectiveBlindMode}
                     backgroundCard={backgroundCard}
                     onPlay={onPlay}
                     currentTrackId={currentTrackId}

@@ -126,6 +126,7 @@ export default function RecommendationCard({
                 {albumImage ? (
                     <motion.img
                         src={albumImage}
+                        draggable={false}
                         alt={`${title} cover`}
                         animate={{
                             scale: blindMode
@@ -138,8 +139,11 @@ export default function RecommendationCard({
                                 ? "blur(18px) brightness(0.62)"
                                 : "blur(0px) brightness(1)",
                         }}
+                        onDragStart={(event) => {
+                            event.preventDefault();
+                        }}
                         transition={{
-                            duration: 0.45,
+                            duration: 0.3,
                             ease: [
                                 0.22,
                                 1,
@@ -152,6 +156,7 @@ export default function RecommendationCard({
                             w-full
                             object-cover
                             will-change-transform
+                            select-none
                         "
                     />
                 ) : (
@@ -314,7 +319,7 @@ export default function RecommendationCard({
                                         : "blur(0px)",
                             }}
                             transition={{
-                                duration: 0.3,
+                                duration: 0.25,
                             }}
                             className="
                                 truncate
@@ -342,7 +347,7 @@ export default function RecommendationCard({
                                         : "blur(0px)",
                             }}
                             transition={{
-                                duration: 0.3,
+                                duration: 0.25,
                             }}
                             className="
                                 mt-1.5

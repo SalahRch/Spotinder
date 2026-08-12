@@ -56,18 +56,27 @@ public class UserService {
             UserPreferencesRequest request
     ) {
 
-        User user = currentUserService.getCurrentUser();
+        User user =
+                currentUserService.getCurrentUser();
 
         if (request.adventureLevel() != null) {
-            user.setAdventureLevel(request.adventureLevel());
+            user.setAdventureLevel(
+                    request.adventureLevel()
+            );
         }
 
-        user.setBlindModeDefault(request.blindModeDefault());
+        if (request.blindModeDefault() != null) {
+            user.setBlindModeDefault(
+                    request.blindModeDefault()
+            );
+        }
 
-        User updatedUser = userRepository.save(user);
+        User updatedUser =
+                userRepository.save(user);
 
         return toResponse(updatedUser);
     }
+
 
     private UserResponse toResponse(User user) {
 
@@ -79,7 +88,8 @@ public class UserService {
                 user.getCountry(),
                 user.getProduct(),
                 user.getAdventureLevel(),
-                user.isBlindModeDefault()
+                user.isBlindModeDefault(),
+                user.getCreatedAt()
         );
 
     }

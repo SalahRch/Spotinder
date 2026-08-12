@@ -1,9 +1,11 @@
-export type SwipeDirection = "RIGHT" | "LEFT";
+export type SwipeDirection =
+    "RIGHT" | "LEFT";
 
 export type SwipeRequest = {
     spotifyTrackId: string;
     direction: SwipeDirection;
     blindMode: boolean;
+    adventureLevel: number;
 };
 
 export type SwipeResponse = {

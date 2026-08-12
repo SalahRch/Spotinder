@@ -1,32 +1,35 @@
 import {
     useMutation,
+    useQuery,
     useQueryClient,
 } from "@tanstack/react-query";
 
-import { swipeService } from "../services/swipe";
+import {
+    getProfile,
+    updatePreferences,
+} from "../api/profile";
 
-export function useRecordSwipe() {
+export function useProfile() {
+    return useQuery({
+        queryKey: ["profile"],
+        queryFn: getProfile,
+    });
+}
+export function useUpdatePreferences() {
     const queryClient =
         useQueryClient();
 
     return useMutation({
-        mutationFn:
-        swipeService.recordSwipe,
+        mutationFn: updatePreferences,
 
         onSuccess: async () => {
             await Promise.all([
                 queryClient.invalidateQueries({
-                    queryKey: ["likes"],
+                    queryKey: ["profile"],
                 }),
 
                 queryClient.invalidateQueries({
-                    queryKey: ["insights"],
-                }),
-
-                queryClient.invalidateQueries({
-                    queryKey: [
-                        "daily-discovery",
-                    ],
+                    queryKey: ["current-user"],
                 }),
             ]);
         },

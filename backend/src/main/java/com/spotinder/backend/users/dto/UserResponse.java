@@ -1,9 +1,10 @@
 package com.spotinder.backend.users.dto;
 
 import com.spotinder.backend.common.enums.SpotifyProduct;
-import jakarta.validation.constraints.NotBlank;
 
-public record UserResponse (
+import java.time.Instant;
+
+public record UserResponse(
 
         String spotifyId,
         String displayName,
@@ -12,6 +13,7 @@ public record UserResponse (
         String country,
         SpotifyProduct product,
         Integer adventureLevel,
-        boolean blindModeDefault
+        boolean blindModeDefault,
+        Instant createdAt
 
-){ }
+) {}

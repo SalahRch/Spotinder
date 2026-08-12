@@ -8,6 +8,8 @@ import AppLayout from "@/app/layouts/AppLayout";
 import DiscoverPage from "@/features/discovery/pages/DiscoverPage";
 import LikesPage from "@/features/likes/pages/LikesPage.tsx";
 import InsightsPage from "@/features/insights/pages/InsightsPage.tsx";
+import ProfilePage from "@/features/profile/pages/ProfilePage.tsx";
+import SettingsPage from "@/features/settings/pages/SettingsPage.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -36,6 +38,14 @@ export const router = createBrowserRouter([
                     {
                         path: "insights",
                         element: <InsightsPage/>,
+                    },
+                    {
+                        path: "profile",
+                        element: <ProfilePage/>,
+                    },
+                    {
+                        path: "settings",
+                        element: <SettingsPage/>,
                     },
                 ],
             },

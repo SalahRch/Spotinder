@@ -1,5 +1,10 @@
-import {useRef, useState} from "react";
-import { motion } from "framer-motion";
+import {
+    useEffect,
+    useRef,
+    useState,
+} from "react";
+
+import {AnimatePresence, motion} from "framer-motion";
 import toast from "react-hot-toast";
 import {
     FiHeart,
@@ -7,7 +12,7 @@ import {
     FiSliders,
     FiX,
 } from "react-icons/fi";
-
+import { useDailyDiscovery } from "../hooks/useDailyDiscovery";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import AmbientBackground from "../components/AmbientBackground";
 import DiscoverySwipeDeck, {
@@ -20,20 +25,122 @@ import type { Recommendation } from "../types/discovery";
 import { useRecommendations } from "../hooks/useRecommendations";
 import { useRecordSwipe } from "../hooks/useRecordSwipe";
 import {usePlayer} from "@/features/player/context/SpotifyPlayerContext.tsx";
+import AuroraText from "@/components/animations/AuroraText.tsx";
+
+
+const greetingTransition = {
+    duration: 0.45,
+    ease: [0.22, 1, 0.36, 1] as [
+        number,
+        number,
+        number,
+        number,
+    ],
+};
+
+function getGreeting() {
+    const hour =
+        new Date().getHours();
+
+    if (hour < 12) {
+        return "Good morning";
+    }
+
+    if (hour < 18) {
+        return "Good afternoon";
+    }
+
+    return "Good evening";
+}
+
+
 export default function DiscoverPage() {
     const { user } = useAuth();
+
+    const {
+        data: dailyDiscovery,
+    } = useDailyDiscovery();
+
+
+    const greeting =
+        getGreeting();
 
     const swipeDeckRef =
         useRef<DiscoverySwipeDeckHandle>(null);
 
-    const [sessionStats, setSessionStats] =
-        useState({
-            seen: 0,
-            liked: 0,
-        });
+    const DAILY_GOAL =
+        dailyDiscovery?.goal ?? 20;
+
+    const explored =
+        dailyDiscovery?.explored ?? 0;
+
+    const liked =
+        dailyDiscovery?.liked ?? 0;
+
+    const dailyGoalProgress = Math.min(
+        (explored / DAILY_GOAL) * 100,
+        100,
+    );
+
+
+    const [
+        adventureHovered,
+        setAdventureHovered,
+    ] = useState(false);
+
+    const [
+        blindHovered,
+        setBlindHovered,
+    ] = useState(false);
+
+    const adventureExpanded =
+        adventureHovered;
+
+
+    const [
+        blindMode,
+        setBlindMode,
+    ] = useState(
+        user?.blindModeDefault ?? false,
+    );useEffect(() => {
+        setBlindMode(
+            user?.blindModeDefault ?? false,
+        );
+    }, [user?.blindModeDefault]);
+
 
     const player =
         usePlayer();
+
+    const playbackSourceRef =
+        useRef(player.playbackSource);
+
+    const stopAndResetRef =
+        useRef(player.stopAndReset);
+
+    useEffect(() => {
+        playbackSourceRef.current =
+            player.playbackSource;
+
+        stopAndResetRef.current =
+            player.stopAndReset;
+    }, [
+        player.playbackSource,
+        player.stopAndReset,
+    ]);
+
+    useEffect(() => {
+        return () => {
+            if (
+                playbackSourceRef.current ===
+                "discover"
+            ) {
+                void stopAndResetRef.current();
+            }
+        };
+    }, []);
+
+
 
     const handleRestartPlayback =
         async () => {
@@ -86,15 +193,6 @@ export default function DiscoverPage() {
         const isLike =
             direction === "right";
 
-        setSessionStats((current) => ({
-            seen:
-                current.seen + 1,
-
-            liked:
-                current.liked +
-                (isLike ? 1 : 0),
-        }));
-
         const apiDirection =
             isLike
                 ? "RIGHT"
@@ -108,30 +206,12 @@ export default function DiscoverPage() {
                 direction:
                 apiDirection,
 
-                blindMode:
-                    false,
+                blindMode,
+
+                adventureLevel:
+                    user?.adventureLevel ?? 50,
             });
         } catch {
-            setSessionStats(
-                (current) => ({
-                    seen:
-                        Math.max(
-                            current.seen -
-                            1,
-                            0,
-                        ),
-
-                    liked:
-                        Math.max(
-                            current.liked -
-                            (isLike
-                                ? 1
-                                : 0),
-                            0,
-                        ),
-                }),
-            );
-
             toast.error(
                 "We couldn't save that swipe.",
             );
@@ -235,9 +315,11 @@ export default function DiscoverPage() {
         <section
             className="
                 relative
-                min-h-screen
-                overflow-hidden
+                min-h-[calc(100vh-3rem)]
+
                 bg-[#0B0F17]
+                xl:h-[calc(100vh-3rem)]
+        xl:min-h-0
             "
         >
             <AmbientBackground />
@@ -248,7 +330,8 @@ export default function DiscoverPage() {
                     z-10
                     mx-auto
                     grid
-                    min-h-screen
+                    min-h-full
+xl:h-full
                     w-full
                     max-w-[1440px]
                     grid-cols-1
@@ -259,12 +342,12 @@ export default function DiscoverPage() {
                     xl:grid-cols-[minmax(230px,1fr)_460px_minmax(230px,1fr)]
                     xl:gap-8
                     xl:px-10
-                    xl:py-6
+                    xl:py-7
                 "
             >
                 {/* ================= LEFT: GREETING ================= */}
 
-                <section
+                <motion.section
                     className="
         order-1
         mx-auto
@@ -279,49 +362,102 @@ export default function DiscoverPage() {
         xl:text-left
     "
                 >
-                    <p
+                    <motion.p
+                        initial={{
+                            opacity: 0,
+                            y: 12,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            y: 0,
+                        }}
+                        transition={{
+                            ...greetingTransition,
+                            delay: 0.08,
+                        }}
                         className="
-                            text-xs
-                            font-medium
-                            uppercase
-                            tracking-[0.28em]
-                            text-violet-300/70
-                        "
+        text-xs
+        font-medium
+        uppercase
+        tracking-[0.28em]
+        text-violet-300/70
+    "
                     >
                         Daily discovery
-                    </p>
+                    </motion.p>
 
-                    <h1
+                    <motion.h1
+                        initial={{
+                            opacity: 0,
+                            y: 12,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            y: 0,
+                        }}
+                        transition={{
+                            ...greetingTransition,
+                            delay: 0.16,
+                        }}
                         className="
-                            mt-4
-                            text-4xl
-                            font-semibold
-                            leading-[1.08]
-                            tracking-tight
-                            text-slate-100
-                            xl:text-[42px]
-                        "
+        mt-4
+        text-4xl
+        font-semibold
+        leading-[1.08]
+        tracking-tight
+        text-slate-100
+        xl:text-[42px]
+    "
                     >
-                        Good evening,
-                        <br className="hidden xl:block" />
-                        {" "}
-                        {user?.displayName ?? "explorer"}.
-                    </h1>
+                        {greeting},
+                    </motion.h1>
 
-                    <p
+                    <motion.h1
+                        initial={{
+                            opacity: 0,
+                            y: 12,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            y: 0,
+                        }}
+                        transition={{
+                            ...greetingTransition,
+                            delay: 0.24,
+                        }}
                         className="
-                            mx-auto
-                            mt-6
-                            max-w-[220px]
-                            text-sm
-                            leading-7
-                            text-slate-400
-                            xl:mx-0
-                            xl:text-base
-                        "
+        text-4xl
+        font-semibold
+        leading-[1.08]
+        tracking-tight
+        text-slate-100
+        xl:text-[42px]
+    "
+                    >
+                        <AuroraText>
+                        {user?.displayName ?? "explorer"}.
+                        </AuroraText>
+                    </motion.h1>
+
+                    <motion.p
+                        transition={{
+                            ...greetingTransition,
+                            delay: 0.32,
+                        }}
+                        className="
+        mx-auto
+        mt-6
+        max-w-[220px]
+        text-sm
+        leading-7
+        text-slate-400
+        xl:mx-0
+        xl:text-base
+    "
                     >
                         Ready to find something you’ve never heard before?
-                    </p>
+                    </motion.p
+                        >
 
                     <div
                         aria-hidden="true"
@@ -337,7 +473,11 @@ export default function DiscoverPage() {
                         "
                     />
 
-                    <div
+                    <motion.div
+                        transition={{
+                            ...greetingTransition,
+                            delay: 0.40,
+                        }}
                         className="
                             mt-7
                             hidden
@@ -359,9 +499,9 @@ export default function DiscoverPage() {
                         />
 
                         Personalized from your Spotify taste
-                    </div>
+                    </motion.div>
 
-                </section>
+                </motion.section>
 
                 {/* ================= CENTER: DISCOVERY ================= */}
 
@@ -374,7 +514,6 @@ export default function DiscoverPage() {
                         flex-col
                         items-center
                         justify-center
-                        xl:translate-y-3
                     "
                 >
                     {/* Main ambient glow */}
@@ -441,7 +580,7 @@ export default function DiscoverPage() {
                         <DiscoverySwipeDeck
                             ref={swipeDeckRef}
                             recommendations={recommendations}
-                            blindMode={false}
+                            blindMode={blindMode}
                             onPlay={handleTogglePlayback}
                             currentTrackId={
                                 player.currentTrack?.id ?? null
@@ -463,14 +602,21 @@ export default function DiscoverPage() {
 
                     <div
                         className="
-                            relative
-                            z-10
-                            -mt-1
-                            flex
-                            items-center
-                            gap-6
-                        "
+        relative
+        z-10
+        -mt-0
+        flex
+        flex-col
+        items-center
+    "
                     >
+                        <div
+                            className="
+            flex
+            items-center
+            gap-6
+        "
+                        >
                         <button
                             type="button"
                             aria-label="Pass song"
@@ -572,17 +718,7 @@ export default function DiscoverPage() {
                         </button>
                     </div>
 
-                    <p
-                        className="
-                            relative
-                            z-10
-                            mt-3
-                            text-xs
-                            text-slate-500
-                        "
-                    >
-                        Drag the card or use the controls
-                    </p>
+                    </div>
                 </section>
 
                 {/* ================= RIGHT: SETTINGS ================= */}
@@ -598,189 +734,556 @@ export default function DiscoverPage() {
                         gap-4
                         xl:mx-0
                         xl:justify-self-end
+                        xl:self-start
+                        xl:pt-8
                     "
                 >
                     {/* Adventure */}
 
-                    <section
+                    <div
                         className="
-                            rounded-[24px]
-                            border
-                            border-white/[0.07]
-                            bg-white/[0.035]
-                            p-6
-                            shadow-[0_20px_60px_rgba(0,0,0,0.24)]
-                            backdrop-blur-xl
-                        "
+        flex
+        w-full
+        justify-end
+    "
                     >
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-3">
-                                <div
+                        <AnimatePresence
+                            mode="wait"
+                            initial={false}
+                        >
+                            {adventureExpanded ? (
+                                <motion.section
+                                    key="adventure-expanded"
+                                    onMouseLeave={() => {
+                                        setAdventureHovered(false);
+                                    }}
+                                    initial={{
+                                        opacity: 0,
+                                        scale: 0.94,
+                                        x: 12,
+                                    }}
+                                    animate={{
+                                        opacity: 1,
+                                        scale: 1,
+                                        x: 0,
+                                    }}
+                                    exit={{
+                                        opacity: 0,
+                                        scale: 0.94,
+                                        x: 12,
+                                    }}
+                                    transition={{
+                                        duration: 0.22,
+                                        ease: [
+                                            0.22,
+                                            1,
+                                            0.36,
+                                            1,
+                                        ],
+                                    }}
                                     className="
-                                        flex
-                                        h-10
-                                        w-10
-                                        shrink-0
-                                        items-center
-                                        justify-center
-                                        rounded-2xl
-                                        border
-                                        border-violet-400/15
-                                        bg-violet-400/[0.08]
-                                        text-violet-300
-                                    "
+                    w-full
+                    rounded-[24px]
+                    border
+                    border-white/[0.07]
+                    bg-white/[0.035]
+                    p-6
+                    shadow-[0_20px_60px_rgba(0,0,0,0.24)]
+                    backdrop-blur-xl
+                "
                                 >
-                                    <FiSliders />
-                                </div>
+                                    <div
+                                        className="
+                        flex
+                        items-start
+                        justify-between
+                        gap-4
+                    "
+                                    >
+                                        <div
+                                            className="
+                            flex
+                            items-start
+                            gap-3
+                        "
+                                        >
+                                            <div
+                                                className="
+                                flex
+                                h-10
+                                w-10
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-2xl
+                                border
+                                border-violet-400/15
+                                bg-violet-400/[0.08]
+                                text-violet-300
+                            "
+                                            >
+                                                <FiSliders />
+                                            </div>
 
-                                <div>
-                                    <h2 className="text-sm font-medium text-slate-100">
-                                        Adventure
-                                    </h2>
+                                            <div>
+                                                <h2
+                                                    className="
+                                    text-sm
+                                    font-medium
+                                    text-slate-100
+                                "
+                                                >
+                                                    Adventure
+                                                </h2>
 
-                                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                                        Control how far recommendations move beyond your usual taste.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <span
-                                className="
-                                    rounded-full
-                                    border
-                                    border-white/10
-                                    bg-white/[0.05]
-                                    px-3
-                                    py-1.5
+                                                <p
+                                                    className="
+                                    mt-1
                                     text-xs
-                                    font-semibold
-                                    text-white
-                                "
-                            >
-                                {user?.adventureLevel ?? 50}%
-                            </span>
-                        </div>
-
-                        <div className="mt-6">
-                            <div
-                                className="
-                                    relative
-                                    h-1.5
-                                    w-full
-                                    rounded-full
-                                    bg-white/10
-                                "
-                            >
-                                <div
-                                    className="
-                                        h-full
-                                        w-1/2
-                                        rounded-full
-                                        bg-gradient-to-r
-                                        from-cyan-400
-                                        to-violet-500
-                                    "
-                                />
-
-                                <div
-                                    className="
-                                        absolute
-                                        left-1/2
-                                        top-1/2
-                                        h-4
-                                        w-4
-                                        -translate-x-1/2
-                                        -translate-y-1/2
-                                        rounded-full
-                                        border-2
-                                        border-[#111827]
-                                        bg-white
-                                        shadow-[0_0_18px_rgba(255,255,255,0.38)]
-                                    "
-                                />
-                            </div>
-
-                            <div
-                                className="
-                                    mt-3
-                                    flex
-                                    items-center
-                                    justify-between
-                                    text-[11px]
+                                    leading-5
                                     text-slate-500
                                 "
-                            >
-                                <span>Comfort zone</span>
-                                <span>Explore everything</span>
-                            </div>
-                        </div>
-                    </section>
+                                                >
+                                                    Control how far recommendations
+                                                    move beyond your usual taste.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <span
+                                            className="
+                            rounded-full
+                            border
+                            border-white/10
+                            bg-white/[0.05]
+                            px-3
+                            py-1.5
+                            text-xs
+                            font-semibold
+                            text-white
+                        "
+                                        >
+                        {user?.adventureLevel ?? 50}%
+                    </span>
+                                    </div>
+
+                                    <div className="mt-6">
+                                        <div
+                                            className="
+                            relative
+                            h-1.5
+                            w-full
+                            rounded-full
+                            bg-white/10
+                        "
+                                        >
+                                            <motion.div
+                                                animate={{
+                                                    width: `${
+                                                        user?.adventureLevel ??
+                                                        50
+                                                    }%`,
+                                                }}
+                                                transition={{
+                                                    duration: 0.35,
+                                                    ease: [
+                                                        0.22,
+                                                        1,
+                                                        0.36,
+                                                        1,
+                                                    ],
+                                                }}
+                                                className="
+                                h-full
+                                rounded-full
+                                bg-gradient-to-r
+                                from-cyan-400
+                                to-violet-500
+                            "
+                                            />
+
+                                            <motion.div
+                                                animate={{
+                                                    left: `${
+                                                        user?.adventureLevel ??
+                                                        50
+                                                    }%`,
+                                                }}
+                                                transition={{
+                                                    duration: 0.35,
+                                                    ease: [
+                                                        0.22,
+                                                        1,
+                                                        0.36,
+                                                        1,
+                                                    ],
+                                                }}
+                                                className="
+                                absolute
+                                top-1/2
+                                h-4
+                                w-4
+                                -translate-x-1/2
+                                -translate-y-1/2
+                                rounded-full
+                                border-2
+                                border-[#111827]
+                                bg-white
+                                shadow-[0_0_18px_rgba(255,255,255,0.38)]
+                            "
+                                            />
+                                        </div>
+
+                                        <div
+                                            className="
+                            mt-3
+                            flex
+                            items-center
+                            justify-between
+                            text-[11px]
+                            text-slate-500
+                        "
+                                        >
+                        <span>
+                            Comfort zone
+                        </span>
+
+                                            <span>
+                            Explore everything
+                        </span>
+                                        </div>
+                                    </div>
+                                </motion.section>
+                            ) : (
+                                <motion.div
+                                    key="adventure-collapsed"
+                                    onMouseEnter={() => {
+                                        setAdventureHovered(true);
+                                    }}
+                                    initial={{
+                                        opacity: 0,
+                                        scale: 0.9,
+                                        x: 18,
+                                    }}
+                                    animate={{
+                                        opacity: 1,
+                                        scale: 1,
+                                        x: 0,
+                                    }}
+                                    exit={{
+                                        opacity: 0,
+                                        scale: 0.9,
+                                        x: 18,
+                                    }}
+                                    transition={{
+                                        duration: 0.2,
+                                        ease: [
+                                            0.22,
+                                            1,
+                                            0.36,
+                                            1,
+                                        ],
+                                    }}
+                                    className="
+                    flex
+                    h-12
+                    w-fit
+                    items-center
+                    gap-3
+                    rounded-full
+                    border
+                    border-violet-400/15
+                    bg-[#111827]/75
+                    px-4
+                    shadow-[0_16px_45px_rgba(0,0,0,0.28)]
+                    backdrop-blur-xl
+                "
+                                >
+                                    <FiSliders
+                                        className="
+                        text-violet-300
+                    "
+                                    />
+
+                                    <span
+                                        className="
+                        text-xs
+                        font-medium
+                        text-slate-300
+                    "
+                                    >
+                    Adventure
+                </span>
+
+                                    <span
+                                        className="
+                        text-xs
+                        font-semibold
+                        text-white
+                    "
+                                    >
+                    {user?.adventureLevel ?? 50}%
+                </span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
 
                     {/* Blind Discovery */}
 
-                    <button
-                        type="button"
+                    <div
                         className="
-                            group
-                            flex
-                            w-full
-                            items-center
-                            justify-between
-                            gap-4
-                            rounded-[22px]
-                            border
-                            border-white/[0.07]
-                            bg-white/[0.035]
-                            px-5
-                            py-4
-                            text-left
-                            shadow-[0_16px_50px_rgba(0,0,0,0.18)]
-                            backdrop-blur-xl
-                            transition
-                            duration-300
-                            hover:border-violet-400/25
-                            hover:bg-white/[0.055]
-                        "
+        flex
+        w-full
+        justify-end
+    "
                     >
-                        <div>
-                            <p className="text-sm font-medium text-slate-200">
-                                Blind Discovery
-                            </p>
-
-                            <p className="mt-1 text-xs leading-5 text-slate-500">
-                                Hide the artist and track identity until you decide.
-                            </p>
-                        </div>
-
-                        <span
-                            className="
-                                relative
-                                h-6
-                                w-11
-                                shrink-0
-                                rounded-full
-                                border
-                                border-white/10
-                                bg-white/[0.06]
-                                transition
-                                group-hover:border-violet-400/25
-                            "
+                        <AnimatePresence
+                            mode="wait"
+                            initial={false}
                         >
-                            <span
-                                className="
-                                    absolute
-                                    left-1
-                                    top-1/2
-                                    h-4
-                                    w-4
-                                    -translate-y-1/2
-                                    rounded-full
-                                    bg-slate-500
-                                    shadow-md
-                                "
-                            />
-                        </span>
-                    </button>
+                            {blindHovered ? (
+                                <motion.button
+                                    key="blind-expanded"
+                                    type="button"
+                                    onMouseLeave={() => {
+                                        setBlindHovered(false);
+                                    }}
+                                    onClick={() => {
+                                        setBlindMode(
+                                            (current) => !current,
+                                        );
+                                    }}
+                                    initial={{
+                                        opacity: 0,
+                                        x: 10,
+                                    }}
+                                    animate={{
+                                        opacity: 1,
+                                        x: 0,
+                                    }}
+                                    exit={{
+                                        opacity: 0,
+                                        x: 10,
+                                    }}
+                                    transition={{
+                                        duration: 0.16,
+                                        ease: [
+                                            0.22,
+                                            1,
+                                            0.36,
+                                            1,
+                                        ],
+                                    }}
+                                    className="
+                    group
+                    flex
+                    w-full
+                    items-center
+                    justify-between
+                    gap-4
+                    rounded-[22px]
+                    border
+                    border-white/[0.07]
+                    bg-white/[0.035]
+                    px-5
+                    py-4
+                    text-left
+                    shadow-[0_16px_50px_rgba(0,0,0,0.18)]
+                    backdrop-blur-xl
+                    transition-colors
+                    duration-200
+                    hover:border-violet-400/25
+                    hover:bg-white/[0.055]
+                "
+                                >
+                                    <div>
+                                        <p
+                                            className="
+                            text-sm
+                            font-medium
+                            text-slate-200
+                        "
+                                        >
+                                            Blind Discovery
+                                        </p>
+
+                                        <p
+                                            className="
+                            mt-1
+                            text-xs
+                            leading-5
+                            text-slate-500
+                        "
+                                        >
+                                            Hide the artist and track
+                                            identity until you decide.
+                                        </p>
+                                    </div>
+
+                                    <span
+                                        className={`
+                        relative
+                        h-6
+                        w-11
+                        shrink-0
+                        rounded-full
+                        border
+                        transition
+                        duration-300
+
+                        ${
+                                            blindMode
+                                                ? `
+                                    border-violet-400/30
+                                    bg-violet-500/30
+                                `
+                                                : `
+                                    border-white/10
+                                    bg-white/[0.06]
+                                `
+                                        }
+                    `}
+                                    >
+                    <motion.span
+                        animate={{
+                            x: blindMode
+                                ? 20
+                                : 4,
+                        }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 450,
+                            damping: 30,
+                        }}
+                        className={`
+                            absolute
+                            left-0
+                            top-1/2
+                            h-4
+                            w-4
+                            -translate-y-1/2
+                            rounded-full
+                            shadow-md
+
+                            ${
+                            blindMode
+                                ? "bg-violet-300"
+                                : "bg-slate-500"
+                        }
+                        `}
+                    />
+                </span>
+                                </motion.button>
+                            ) : (
+                                <motion.button
+                                    key="blind-collapsed"
+                                    type="button"
+                                    onMouseEnter={() => {
+                                        setBlindHovered(true);
+                                    }}
+
+                                    /*
+                                     * Don't toggle on click here.
+                                     * Clicking/focusing this compact
+                                     * control opens it first.
+                                     */
+                                    onClick={() => {
+                                        setBlindHovered(true);
+                                    }}
+                                    initial={{
+                                        opacity: 0,
+                                        x: 12,
+                                    }}
+                                    animate={{
+                                        opacity: 1,
+                                        x: 0,
+                                    }}
+                                    exit={{
+                                        opacity: 0,
+                                        x: 12,
+                                    }}
+                                    transition={{
+                                        duration: 0.16,
+                                        ease: [
+                                            0.22,
+                                            1,
+                                            0.36,
+                                            1,
+                                        ],
+                                    }}
+                                    className="
+                    flex
+                    h-12
+                    w-fit
+                    items-center
+                    gap-3
+                    rounded-full
+                    border
+                    border-violet-400/15
+                    bg-[#111827]/75
+                    px-4
+                    shadow-[0_16px_45px_rgba(0,0,0,0.24)]
+                    backdrop-blur-xl
+                    transition-colors
+                    duration-200
+                    hover:border-violet-400/30
+                    hover:bg-violet-400/[0.07]
+                "
+                                >
+                <span
+                    className={`
+                        h-2
+                        w-2
+                        rounded-full
+                        transition-colors
+                        duration-200
+
+                        ${
+                        blindMode
+                            ? `
+                                    bg-violet-300
+                                    shadow-[0_0_12px_rgba(196,181,253,0.75)]
+                                `
+                            : `
+                                    bg-slate-600
+                                `
+                    }
+                    `}
+                />
+
+                                    <span
+                                        className="
+                        text-xs
+                        font-medium
+                        text-slate-300
+                    "
+                                    >
+                    Blind Discovery
+                </span>
+
+                                    <span
+                                        className={`
+                        text-[11px]
+                        font-semibold
+                        uppercase
+                        tracking-wide
+
+                        ${
+                                            blindMode
+                                                ? "text-violet-300"
+                                                : "text-slate-500"
+                                        }
+                    `}
+                                    >
+                    {blindMode
+                        ? "On"
+                        : "Off"}
+                </span>
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
+                    </div>
 
 
                     {/* Today's Session */}
@@ -800,6 +1303,7 @@ export default function DiscoverPage() {
                             ease: [0.22, 1, 0.36, 1],
                         }}
                         className="
+        mt-4
         rounded-[24px]
         border
         border-white/[0.07]
@@ -850,7 +1354,7 @@ export default function DiscoverPage() {
                                 </div>
 
                                 <motion.span
-                                    key={sessionStats.liked}
+                                    key={liked}
                                     initial={{
                                         opacity: 0,
                                         y: 5,
@@ -866,7 +1370,7 @@ export default function DiscoverPage() {
                                     }}
                                     className="text-sm font-medium text-slate-100"
                                 >
-                                    {sessionStats.liked}
+                                    {liked}
                                 </motion.span>
                             </div>
 
@@ -880,7 +1384,7 @@ export default function DiscoverPage() {
                                 </div>
 
                                 <motion.span
-                                    key={sessionStats.seen}
+                                    key={explored}
                                     initial={{
                                         opacity: 0,
                                         y: 5,
@@ -896,23 +1400,10 @@ export default function DiscoverPage() {
                                     }}
                                     className="text-sm font-medium text-slate-100"
                                 >
-                                    {sessionStats.seen}
+                                    {explored}
                                 </motion.span>
                             </div>
 
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <span className="h-2 w-2 rounded-full bg-orange-400" />
-
-                                    <span className="text-sm text-slate-400">
-                    Streak
-                </span>
-                                </div>
-
-                                <span className="text-sm font-medium text-slate-100">
-                —
-            </span>
-                            </div>
                         </div>
 
                         <div className="my-5 h-px bg-white/[0.06]" />
@@ -924,30 +1415,33 @@ export default function DiscoverPage() {
             </span>
 
                                 <span className="text-slate-400">
-                0 / 20
+                {explored} / {DAILY_GOAL}
             </span>
                             </div>
 
                             <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                                 <motion.div
-                                    initial={{
-                                        width: 0,
-                                    }}
+                                    initial={false}
                                     animate={{
-                                        width: "0%",
+                                        width: `${dailyGoalProgress}%`,
                                     }}
                                     transition={{
-                                        duration: 0.8,
-                                        delay: 0.5,
+                                        duration: 0.35,
+                                        ease: [
+                                            0.22,
+                                            1,
+                                            0.36,
+                                            1,
+                                        ],
                                     }}
                                     className="
-                    h-full
-                    rounded-full
-                    bg-gradient-to-r
-                    from-cyan-400
-                    via-violet-500
-                    to-fuchsia-500
-                "
+        h-full
+        rounded-full
+        bg-gradient-to-r
+        from-cyan-400
+        via-violet-400
+        to-fuchsia-400
+    "
                                 />
                             </div>
                         </div>

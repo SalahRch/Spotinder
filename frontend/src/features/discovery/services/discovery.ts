@@ -1,10 +1,25 @@
 import api from "@/services/api";
 
-import type { Recommendation } from "../types/discovery";
+import type {
+    DailyDiscovery,
+    Recommendation,
+} from "../types/discovery";
 
 export const discoveryService = {
     async getRecommendations(): Promise<Recommendation[]> {
-        const { data } = await api.get<Recommendation[]>("/discover");
+        const { data } =
+            await api.get<Recommendation[]>(
+                "/discover",
+            );
+
+        return data;
+    },
+
+    async getDailyDiscovery(): Promise<DailyDiscovery> {
+        const { data } =
+            await api.get<DailyDiscovery>(
+                "/discover/daily",
+            );
 
         return data;
     },
