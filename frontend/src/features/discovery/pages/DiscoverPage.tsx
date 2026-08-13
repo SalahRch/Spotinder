@@ -26,6 +26,8 @@ import { useRecommendations } from "../hooks/useRecommendations";
 import { useRecordSwipe } from "../hooks/useRecordSwipe";
 import {usePlayer} from "@/features/player/context/SpotifyPlayerContext.tsx";
 import AuroraText from "@/components/animations/AuroraText.tsx";
+import {useDailyDiscoveryRecap} from "@/features/discovery/hooks/useDailyDiscoveryRecap.ts";
+import DailyJourneyRecap from "@/features/discovery/components/DailyJourneyRecap.tsx";
 
 
 const greetingTransition = {
@@ -60,6 +62,45 @@ export default function DiscoverPage() {
     const {
         data: dailyDiscovery,
     } = useDailyDiscovery();
+
+    const dailyComplete =
+        dailyDiscovery?.completed ?? false;
+
+    const {
+        data: dailyRecap,
+        isLoading: dailyRecapLoading,
+    } = useDailyDiscoveryRecap(
+        dailyComplete,
+    );
+
+    const [
+        recapOpen,
+        setRecapOpen,
+    ] = useState(true);
+
+    const previousCompletedRef =
+        useRef(false);
+
+    useEffect(() => {
+        const wasCompleted =
+            previousCompletedRef.current;
+
+        const isCompleted =
+            dailyDiscovery?.completed ??
+            false;
+
+        if (
+            !wasCompleted &&
+            isCompleted
+        ) {
+            setRecapOpen(true);
+        }
+
+        previousCompletedRef.current =
+            isCompleted;
+    }, [
+        dailyDiscovery?.completed,
+    ]);
 
 
     const greeting =
@@ -1473,6 +1514,14 @@ xl:h-full
                     </div>
                 </aside>
             </div>
+            <DailyJourneyRecap
+                open={recapOpen}
+                recap={dailyRecap}
+                loading={dailyRecapLoading}
+                onClose={() => {
+                    setRecapOpen(false);
+                }}
+            />
         </section>
     );
 }

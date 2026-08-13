@@ -21,4 +21,9 @@ public interface DiscoverySessionRepository
     findByUserIdOrderByDiscoveryDateDesc(
             String userId
     );
+
+    List<DiscoverySession>
+    findByUserIdAndCompletedTrueOrderByDiscoveryDateDesc(
+            String userId
+    );
 }

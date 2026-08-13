@@ -1,5 +1,6 @@
 package com.spotinder.backend.discovery.entity;
 
+import com.spotinder.backend.common.enums.DiscoveryPersona;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -67,7 +68,85 @@ public class DiscoverySession {
     @Column(nullable = false)
     private boolean completed = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discovery_persona")
+    private DiscoveryPersona discoveryPersona;
+
+    @Column(name = "journey_title")
+    private String journeyTitle;
+
+    @Column(name = "recap_message")
+    private String recapMessage;
+
+    @Column(name = "like_rate")
+    private Double likeRate;
+
+    @Column(name = "blind_explored")
+    private Integer blindExplored;
+
+    @Column(name = "blind_liked")
+    private Integer blindLiked;
+
+    @Column(name = "average_adventure_level")
+    private Double averageAdventureLevel;
+
     public DiscoverySession() {
+    }
+
+    public DiscoveryPersona getDiscoveryPersona() {
+        return discoveryPersona;
+    }
+
+    public void setDiscoveryPersona(DiscoveryPersona discoveryPersona) {
+        this.discoveryPersona = discoveryPersona;
+    }
+
+    public String getJourneyTitle() {
+        return journeyTitle;
+    }
+
+    public void setJourneyTitle(String journeyTitle) {
+        this.journeyTitle = journeyTitle;
+    }
+
+    public String getRecapMessage() {
+        return recapMessage;
+    }
+
+    public void setRecapMessage(String recapMessage) {
+        this.recapMessage = recapMessage;
+    }
+
+    public Double getLikeRate() {
+        return likeRate;
+    }
+
+    public void setLikeRate(Double likeRate) {
+        this.likeRate = likeRate;
+    }
+
+    public Integer getBlindExplored() {
+        return blindExplored;
+    }
+
+    public void setBlindExplored(Integer blindExplored) {
+        this.blindExplored = blindExplored;
+    }
+
+    public Integer getBlindLiked() {
+        return blindLiked;
+    }
+
+    public void setBlindLiked(Integer blindLiked) {
+        this.blindLiked = blindLiked;
+    }
+
+    public Double getAverageAdventureLevel() {
+        return averageAdventureLevel;
+    }
+
+    public void setAverageAdventureLevel(Double averageAdventureLevel) {
+        this.averageAdventureLevel = averageAdventureLevel;
     }
 
     public UUID getId() {

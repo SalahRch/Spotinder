@@ -35,4 +35,8 @@ public interface SwipeRepository extends JpaRepository<Swipe, UUID> {
             String userId,
             SwipeDirection direction
     );
+
+    List<Swipe> findByDiscoverySessionId(
+            UUID discoverySessionId
+    );
 }

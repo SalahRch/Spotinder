@@ -5,6 +5,7 @@ import com.spotinder.backend.common.exception.ResourceNotFoundException;
 import com.spotinder.backend.common.service.CurrentUserService;
 import com.spotinder.backend.discovery.entity.DiscoverySession;
 import com.spotinder.backend.discovery.repository.DiscoverySessionRepository;
+import com.spotinder.backend.discovery.service.DailyDiscoveryService;
 import com.spotinder.backend.swipes.dto.SwipeRequest;
 import com.spotinder.backend.swipes.dto.SwipeResponse;
 import com.spotinder.backend.swipes.entity.Swipe;
@@ -25,11 +26,13 @@ public class SwipeService {
             discoverySessionRepository;
     private final CurrentUserService currentUserService;
     private final SwipeRepository swipeRepository;
+    private final DailyDiscoveryService dailyDiscoveryService;
 
-    public SwipeService(DiscoverySessionRepository discoverySessionRepository, CurrentUserService currentUserService, SwipeRepository swipeRepository) {
+    public SwipeService(DiscoverySessionRepository discoverySessionRepository, CurrentUserService currentUserService, SwipeRepository swipeRepository, DailyDiscoveryService dailyDiscoveryService) {
         this.discoverySessionRepository = discoverySessionRepository;
         this.currentUserService = currentUserService;
         this.swipeRepository = swipeRepository;
+        this.dailyDiscoveryService = dailyDiscoveryService;
     }
 
     public SwipeResponse recordSwipe(SwipeRequest request) {
@@ -38,7 +41,7 @@ public class SwipeService {
                 currentUserService.getCurrentUser();
 
         DiscoverySession session =
-                getOrCreateTodaySession(user);
+                getActiveTodaySession(user);
 
         Optional<Swipe> existingSwipe =
                 swipeRepository
@@ -55,8 +58,7 @@ public class SwipeService {
                         .map(existing ->
                                 updateExistingSwipe(
                                         existing,
-                                        request,
-                                        session
+                                        request
                                 )
                         )
                         .orElseGet(() ->
@@ -71,7 +73,7 @@ public class SwipeService {
 
         if (
                 isNewSwipe &&
-                        !session.isCompleted()
+                        session != null
         ) {
             updateDailyProgress(
                     session,
@@ -117,6 +119,16 @@ public class SwipeService {
             session.setCompletedAt(
                     Instant.now()
             );
+
+            discoverySessionRepository.save(
+                    session
+            );
+
+            dailyDiscoveryService.finalizeSession(
+                    session
+            );
+
+            return ;
         }
 
         discoverySessionRepository.save(
@@ -124,46 +136,53 @@ public class SwipeService {
         );
     }
 
-    private DiscoverySession getOrCreateTodaySession(
+    private DiscoverySession getActiveTodaySession(
             User user
     ) {
 
         LocalDate today =
                 LocalDate.now();
 
+        Optional<DiscoverySession> existingSession =
+                discoverySessionRepository
+                        .findByUserIdAndDiscoveryDate(
+                                user.getSpotifyId(),
+                                today
+                        );
+
+        if (existingSession.isPresent()) {
+
+            DiscoverySession session =
+                    existingSession.get();
+
+            if (session.isCompleted()) {
+                return null;
+            }
+
+            return session;
+        }
+
+        DiscoverySession session =
+                new DiscoverySession();
+
+        session.setUserId(
+                user.getSpotifyId()
+        );
+
+        session.setDiscoveryDate(
+                today
+        );
+
         return discoverySessionRepository
-                .findByUserIdAndDiscoveryDate(
-                        user.getSpotifyId(),
-                        today
-                )
-                .orElseGet(() -> {
-
-                    DiscoverySession session =
-                            new DiscoverySession();
-
-                    session.setUserId(
-                            user.getSpotifyId()
-                    );
-
-                    session.setDiscoveryDate(
-                            today
-                    );
-
-                    return discoverySessionRepository
-                            .save(session);
-                });
+                .save(session);
     }
 
-    private Swipe updateExistingSwipe(Swipe swipe, SwipeRequest request, DiscoverySession session) {
+    private Swipe updateExistingSwipe(Swipe swipe, SwipeRequest request) {
 
         swipe.setDirection(request.direction());
         swipe.setBlindMode(request.blindMode());
         swipe.setAdventureLevel(
                 request.adventureLevel()
-        );
-
-        swipe.setDiscoverySession(
-                session
         );
 
         return swipe;

@@ -13,3 +13,23 @@ export type DailyDiscovery = {
     completed: boolean;
     completedAt: string | null;
 };
+export type DailyDiscoveryRecap = {
+    id: string;
+    date: string;
+    journeyTitle: string;
+    discoveryPersona:
+        | "WILDCARD"
+        | "EXPLORER"
+        | "PURIST"
+        | "ROMANTIC"
+        | "CURATOR"
+        | "WANDERER";
+    recapMessage: string;
+    explored: number;
+    liked: number;
+    likeRate: number;
+    blindExplored: number;
+    blindLiked: number;
+    averageAdventureLevel: number;
+    completedAt: string;
+};

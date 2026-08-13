@@ -1,5 +1,6 @@
 package com.spotinder.backend.discovery.controller;
 
+import com.spotinder.backend.discovery.dto.DailyDiscoveryRecapResponse;
 import com.spotinder.backend.discovery.dto.DailyDiscoveryResponse;
 import com.spotinder.backend.discovery.dto.SongResponse;
 import com.spotinder.backend.discovery.service.DailyDiscoveryService;
@@ -28,6 +29,11 @@ public class DiscoveryController {
     @GetMapping("/daily")
     public DailyDiscoveryResponse getDailyDiscovery() {
         return dailyDiscoveryService.getToday();
+    }
+
+    @GetMapping("/daily/recap")
+    public DailyDiscoveryRecapResponse getDailyDiscoveryRecap() {
+        return dailyDiscoveryService.getTodayRecap();
     }
 
 }
