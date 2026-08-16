@@ -2,14 +2,13 @@ import {
     useInsights,
 } from "../hooks/useInsights";
 
-
 import DiscoveryScoreCard from "../components/DiscoveryScoreCard";
 import InsightsHero from "../components/InsightsHero";
 import SwipeBreakdown from "../components/SwipeBreakdown";
 import DiscoveryPersonality from "../components/DiscoveryPersonality";
 
-
-
+import JourneyCollection
+    from "@/features/discovery/components/JourneyCollection";
 
 export default function InsightsPage() {
     const {
@@ -40,25 +39,25 @@ export default function InsightsPage() {
     return (
         <section
             className="
-            relative
-            min-h-screen
-            overflow-hidden
-            bg-[#0B0F17]
-            text-white
-        "
+                relative
+                min-h-screen
+                overflow-hidden
+                bg-[#0B0F17]
+                text-white
+            "
         >
             <div
                 className="
-                relative
-                z-10
-                mx-auto
-                w-full
-                max-w-[1280px]
-                px-6
-                py-10
-                lg:px-10
-                lg:py-12
-            "
+                    relative
+                    z-10
+                    mx-auto
+                    w-full
+                    max-w-[1280px]
+                    px-6
+                    py-10
+                    lg:px-10
+                    lg:py-12
+                "
             >
                 <InsightsHero
                     insights={insights}
@@ -66,23 +65,30 @@ export default function InsightsPage() {
 
                 <div
                     className="
-        mt-6
-        grid
-        gap-6
-        lg:grid-cols-[0.9fr_1.1fr]
-    "
+                        mt-6
+                        grid
+                        gap-6
+                        lg:grid-cols-[0.9fr_1.1fr]
+                    "
                 >
                     <DiscoveryScoreCard
-                        score={insights.discoveryScore}
+                        score={
+                            insights.discoveryScore
+                        }
                     />
 
                     <SwipeBreakdown
                         insights={insights}
                     />
                 </div>
+
                 <DiscoveryPersonality
                     insights={insights}
                 />
+
+                <div className="mt-10">
+                    <JourneyCollection />
+                </div>
             </div>
         </section>
     );

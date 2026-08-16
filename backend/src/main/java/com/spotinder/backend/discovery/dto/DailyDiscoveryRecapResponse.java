@@ -4,6 +4,7 @@ import com.spotinder.backend.common.enums.DiscoveryPersona;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record DailyDiscoveryRecapResponse(
@@ -30,7 +31,9 @@ public record DailyDiscoveryRecapResponse(
 
         double averageAdventureLevel,
 
-        Instant completedAt
+        Instant completedAt,
+
+        List<JourneyTrackResponse> tracks
 
 ) {
 }

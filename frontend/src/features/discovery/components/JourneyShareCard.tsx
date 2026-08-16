@@ -1,8 +1,9 @@
-import { motion } from "framer-motion";
-
 import type {
     DailyDiscoveryRecap,
 } from "../types/discovery";
+import JourneyConstellation from "@/features/discovery/components/JourneyConstellation.tsx";
+import {useJourneyAlbumColors} from "@/features/discovery/hooks/useJourneyAlbumColors.ts";
+import {pickJourneyAuraColors} from "@/features/discovery/utils/journeyPalette.ts";
 
 type JourneyShareCardProps = {
     recap: DailyDiscoveryRecap;
@@ -22,6 +23,22 @@ function formatPersona(
 export default function JourneyShareCard({
                                              recap,
                                          }: JourneyShareCardProps) {
+
+
+
+    const albumColors =
+        useJourneyAlbumColors(
+            recap.tracks ?? [],
+        );
+
+    const [
+        primaryAura,
+        secondaryAura,
+    ] = pickJourneyAuraColors(
+        Object.values(albumColors),
+    );
+
+
     return (
         <div
             className="
@@ -41,59 +58,44 @@ export default function JourneyShareCard({
 
             <div
                 aria-hidden="true"
+                style={{
+                    backgroundColor:
+                    primaryAura,
+                }}
                 className="
                     pointer-events-none
                     absolute
-                    -left-24
-                    top-20
-                    h-[300px]
-                    w-[300px]
+                    -left-28
+                    top-16
+                    h-[320px]
+                    w-[320px]
                     rounded-full
-                    bg-violet-500/[0.18]
-                    blur-[110px]
+                    opacity-[0.16]
+                    blur-[120px]
                 "
             />
 
             <div
                 aria-hidden="true"
+                style={{
+                    backgroundColor:
+                    secondaryAura,
+                }}
                 className="
                     pointer-events-none
                     absolute
-                    -right-24
-                    bottom-28
-                    h-[300px]
-                    w-[300px]
+                    -right-28
+                    bottom-24
+                    h-[320px]
+                    w-[320px]
                     rounded-full
-                    bg-cyan-400/[0.14]
-                    blur-[110px]
+                    opacity-[0.14]
+                    blur-[120px]
                 "
             />
 
             {/* Persona motif */}
 
-            <motion.div
-                aria-hidden="true"
-                animate={{
-                    rotate: 360,
-                }}
-                transition={{
-                    duration: 32,
-                    repeat: Infinity,
-                    ease: "linear",
-                }}
-                className="
-                    pointer-events-none
-                    absolute
-                    left-1/2
-                    top-[38%]
-                    h-[220px]
-                    w-[340px]
-                    -translate-x-1/2
-                    rounded-[50%]
-                    border
-                    border-violet-300/[0.06]
-                "
-            />
 
             <div
                 className="
@@ -165,7 +167,7 @@ export default function JourneyShareCard({
 
                 <div
                     className="
-                        mt-16
+                        mt-5
                         text-center
                     "
                 >
@@ -210,72 +212,91 @@ export default function JourneyShareCard({
 
                     <div
                         className="
-                            mx-auto
-                            mt-7
-                            h-1.5
-                            w-1.5
-                            rotate-45
-                            bg-violet-300
-                            shadow-[0_0_16px_rgba(196,181,253,0.8)]
-                        "
-                    />
-
-                    <p
-                        className="
-                            mt-5
-                            text-[9px]
-                            font-semibold
-                            uppercase
-                            tracking-[0.28em]
-                            text-slate-600
-                        "
+        relative
+        mx-auto
+        mt-5
+        flex
+        h-[170px]
+        w-full
+        items-center
+        justify-center
+    "
                     >
-                        You discovered as
-                    </p>
+                        <JourneyConstellation
+                            recap={recap}
+                            albumColors={albumColors}
+                        />
 
-                    <p
-                        className="
-                            mt-2
-                            text-sm
-                            font-semibold
-                            uppercase
-                            tracking-[0.32em]
-                            text-violet-200
-                        "
-                    >
-                        The{" "}
-                        {formatPersona(
-                            recap.discoveryPersona,
-                        )}
-                    </p>
+                        <div
+                            className="
+            relative
+            z-10
+            text-center
+        "
+                        >
+                            <p
+                                className="
+                text-[9px]
+                font-semibold
+                uppercase
+                tracking-[0.3em]
+                text-slate-500
+            "
+                            >
+                                You discovered as
+                            </p>
+
+                            <p
+                                className="
+                mt-3
+                bg-gradient-to-r
+                from-cyan-200
+                via-violet-200
+                to-fuchsia-200
+                bg-clip-text
+                text-lg
+                font-semibold
+                uppercase
+                tracking-[0.3em]
+                text-transparent
+            "
+                            >
+                                The{" "}
+                                {formatPersona(
+                                    recap.discoveryPersona,
+                                )}
+                            </p>
+
+                            <p
+                                className="
+            mt-3
+            text-[8px]
+            uppercase
+            tracking-[0.22em]
+            text-slate-600
+        "
+                            >
+                                {recap.explored} songs shaped this journey
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Stats */}
 
                 <div
                     className="
-                        mt-14
-                        grid
-                        grid-cols-2
-                        gap-x-6
-                        gap-y-5
-                    "
+        mt-7
+        grid
+        grid-cols-2
+        gap-8
+    "
                 >
-                    <ShareStat
-                        value={recap.explored}
-                        label="Discovered"
-                    />
-
                     <ShareStat
                         value={`${Math.round(
                             recap.likeRate,
                         )}%`}
                         label="Hit rate"
-                    />
-
-                    <ShareStat
-                        value={recap.blindExplored}
-                        label="Heard blind"
                     />
 
                     <ShareStat
@@ -286,11 +307,12 @@ export default function JourneyShareCard({
                     />
                 </div>
 
+
                 {/* Quote */}
 
                 <div
                     className="
-                        mt-auto
+                        mt-10
                         text-center
                     "
                 >
@@ -303,7 +325,7 @@ export default function JourneyShareCard({
                             text-slate-300
                         "
                     >
-                        “{recap.recapMessage}”
+                        {recap.recapMessage}
                     </p>
 
                     <div

@@ -10,6 +10,7 @@ import LikesPage from "@/features/likes/pages/LikesPage.tsx";
 import InsightsPage from "@/features/insights/pages/InsightsPage.tsx";
 import ProfilePage from "@/features/profile/pages/ProfilePage.tsx";
 import SettingsPage from "@/features/settings/pages/SettingsPage.tsx";
+import JourneysPage from "@/features/Journeys/JourneysPage.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
                     {
                         path: "settings",
                         element: <SettingsPage/>,
+                    },
+                    {
+                        path: "journeys",
+                        element: <JourneysPage />,
                     },
                 ],
             },

@@ -2,12 +2,11 @@ package com.spotinder.backend.discovery.service;
 
 import com.spotinder.backend.common.enums.SwipeDirection;
 import com.spotinder.backend.common.service.CurrentUserService;
-import com.spotinder.backend.discovery.dto.DailyDiscoveryRecapResponse;
-import com.spotinder.backend.discovery.dto.DailyDiscoveryResponse;
-import com.spotinder.backend.discovery.dto.JourneyIdentity;
-import com.spotinder.backend.discovery.dto.JourneySummaryResponse;
+import com.spotinder.backend.discovery.dto.*;
 import com.spotinder.backend.discovery.entity.DiscoverySession;
 import com.spotinder.backend.discovery.repository.DiscoverySessionRepository;
+import com.spotinder.backend.spotify.dto.SpotifyTrackResponse;
+import com.spotinder.backend.spotify.service.SpotifyService;
 import com.spotinder.backend.swipes.entity.Swipe;
 import com.spotinder.backend.swipes.repository.SwipeRepository;
 import com.spotinder.backend.users.entity.User;
@@ -24,16 +23,18 @@ public class DailyDiscoveryService {
     private final DiscoverySessionRepository discoverySessionRepository;
     private final SwipeRepository swipeRepository;
     private final JourneyIdentityEngine journeyIdentityEngine;
+    private final SpotifyService spotifyService;
 
     public DailyDiscoveryService(
             CurrentUserService currentUserService,
-            DiscoverySessionRepository discoverySessionRepository, SwipeRepository swipeRepository, JourneyIdentityEngine journeyIdentityEngine
+            DiscoverySessionRepository discoverySessionRepository, SwipeRepository swipeRepository, JourneyIdentityEngine journeyIdentityEngine, SpotifyService spotifyService
     ) {
         this.currentUserService = currentUserService;
         this.discoverySessionRepository =
                 discoverySessionRepository;
         this.swipeRepository = swipeRepository;
         this.journeyIdentityEngine = journeyIdentityEngine;
+        this.spotifyService = spotifyService;
     }
 
     public DailyDiscoveryResponse getToday() {
@@ -58,6 +59,53 @@ public class DailyDiscoveryService {
                         );
 
         return toResponse(session);
+    }
+
+    private List<JourneyTrackResponse> getJourneyTracks(
+            DiscoverySession session
+    ) {
+
+        List<Swipe> swipes =
+                swipeRepository
+                        .findByDiscoverySessionId(
+                                session.getId()
+                        );
+
+        System.out.println(
+                "Journey swipes count: " +
+                        swipes.size()
+        );
+
+        List<String> trackIds =
+                swipes.stream()
+                        .map(Swipe::getSpotifyTrackId)
+                        .toList();
+
+        System.out.println(
+                "Journey track ids: " +
+                        trackIds.size()
+        );
+
+        List<SpotifyTrackResponse> spotifyTracks =
+                spotifyService.getTracksByIds(
+                        trackIds
+                );
+
+        System.out.println(
+                "Spotify resolved tracks: " +
+                        spotifyTracks.size()
+        );
+
+        return spotifyTracks.stream()
+                .map(track ->
+                        new JourneyTrackResponse(
+                                track.id(),
+                                track.title(),
+                                track.artist(),
+                                track.albumImage()
+                        )
+                )
+                .toList();
     }
 
     public DailyDiscoveryRecapResponse getTodayRecap() {
@@ -86,20 +134,7 @@ public class DailyDiscoveryService {
             );
         }
 
-        return new DailyDiscoveryRecapResponse(
-                session.getId(),
-                session.getDiscoveryDate(),
-                session.getJourneyTitle(),
-                session.getDiscoveryPersona(),
-                session.getRecapMessage(),
-                session.getSongsSeen(),
-                session.getSongsLiked(),
-                session.getLikeRate(),
-                session.getBlindExplored(),
-                session.getBlindLiked(),
-                session.getAverageAdventureLevel(),
-                session.getCompletedAt()
-        );
+        return toRecapResponse(session);
     }
 
     public List<JourneySummaryResponse> getJourneys() {
@@ -172,6 +207,12 @@ public class DailyDiscoveryService {
             DiscoverySession session
     ) {
 
+
+        List<JourneyTrackResponse> tracks =
+                getJourneyTracks(session);
+
+
+
         return new DailyDiscoveryRecapResponse(
                 session.getId(),
                 session.getDiscoveryDate(),
@@ -184,7 +225,8 @@ public class DailyDiscoveryService {
                 session.getBlindExplored(),
                 session.getBlindLiked(),
                 session.getAverageAdventureLevel(),
-                session.getCompletedAt()
+                session.getCompletedAt(),
+                tracks
         );
     }
 

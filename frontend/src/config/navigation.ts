@@ -3,7 +3,7 @@ import {
     FiHeart,
     FiBarChart2,
     FiUser,
-    FiSettings,
+    FiSettings, FiLayers,
 } from "react-icons/fi";
 
 
@@ -22,6 +22,12 @@ export const navigation = [
         name: "Insights",
         path: "/app/insights",
         icon: FiBarChart2,
+    },
+    {
+        name: "Journeys",
+        path: "/app/journeys",
+        icon: FiLayers,
+
     },
     {
         name: "Profile",

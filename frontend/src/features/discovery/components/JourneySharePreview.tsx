@@ -21,6 +21,7 @@ export default function JourneySharePreview({
                                                 recap,
                                                 onClose,
                                             }: JourneySharePreviewProps) {
+
     return (
         <AnimatePresence>
             {open && recap && (
