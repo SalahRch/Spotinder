@@ -41,6 +41,10 @@ export type DailyDiscoveryRecap = {
     completedAt: string;
     tracks: JourneyTrack[];
 };
+export type JourneyTrackPreview = {
+    spotifyTrackId: string;
+    albumImage: string | null;
+};
 export type JourneySummary = {
     id: string;
     date: string;
@@ -57,4 +61,5 @@ export type JourneySummary = {
     likeRate: number;
     averageAdventureLevel: number;
     completedAt: string;
+    trackPreviews: JourneyTrackPreview[];
 };

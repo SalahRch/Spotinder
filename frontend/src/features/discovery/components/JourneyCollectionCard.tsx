@@ -1,11 +1,52 @@
 import type {
     JourneySummary,
 } from "../types/discovery";
+import {useJourneyAlbumColors} from "@/features/discovery/hooks/useJourneyAlbumColors.ts";
 
 type JourneyCollectionCardProps = {
     journey: JourneySummary;
     onClick: () => void;
 };
+
+
+function getJourneySubtitle(
+    journey: JourneySummary,
+) {
+    if (
+        journey.likeRate >= 90 &&
+        journey.averageAdventureLevel >= 80
+    ) {
+        return "Bold taste. Almost no hesitation.";
+    }
+
+    if (
+        journey.likeRate >= 90 &&
+        journey.averageAdventureLevel < 50
+    ) {
+        return "Familiar territory, perfect instincts.";
+    }
+
+    if (
+        journey.likeRate < 60 &&
+        journey.averageAdventureLevel >= 80
+    ) {
+        return "You wandered far and stayed selective.";
+    }
+
+    if (
+        journey.averageAdventureLevel >= 70
+    ) {
+        return "A high-adventure discovery run.";
+    }
+
+    if (
+        journey.likeRate >= 80
+    ) {
+        return "A day full of strong matches.";
+    }
+
+    return "A snapshot of how your taste moved.";
+}
 
 function formatPersona(
     persona: JourneySummary["discoveryPersona"],
@@ -22,6 +63,36 @@ export default function JourneyCollectionCard({
                                                   journey,
                                                   onClick,
                                               }: JourneyCollectionCardProps) {
+
+    const previewTracks =
+        (journey.trackPreviews ?? []).map(
+            (track) => ({
+                spotifyTrackId:
+                track.spotifyTrackId,
+
+                title: "",
+                artist: "",
+
+                albumImage:
+                track.albumImage,
+            }),
+        );
+
+    const albumColors =
+        useJourneyAlbumColors(
+            previewTracks,
+        );
+
+    const previewColors =
+        Object.values(
+            albumColors,
+        );
+
+    const primaryColor =
+        previewColors[0] ??
+        "#8B5CF6";
+
+
     return (
         <button
             type="button"
@@ -48,21 +119,70 @@ export default function JourneyCollectionCard({
 
             <div
                 aria-hidden="true"
+                style={{
+                    backgroundColor:
+                    primaryColor,
+                }}
                 className="
                     pointer-events-none
                     absolute
                     -right-20
-                    -top-20
-                    h-[220px]
-                    w-[220px]
+                    -top-10
+                    h-[190px]
+                    w-[190px]
                     rounded-full
-                    bg-violet-500/[0.08]
-                    blur-[80px]
-                    transition
-                    duration-500
-                    group-hover:bg-violet-500/[0.13]
+                    opacity-[0.08]
+                    blur-[70px]
                 "
             />
+
+            <div
+                aria-hidden="true"
+                className="
+        pointer-events-none
+        absolute
+        inset-0
+        overflow-hidden
+    "
+            >
+                {previewColors
+                    .slice(0, 5)
+                    .map(
+                        (
+                            color,
+                            index,
+                        ) => (
+                            <span
+                                key={`${color}-${index}`}
+                                style={{
+                                    backgroundColor:
+                                    color,
+                                    boxShadow:
+                                        `0 0 22px ${color}`,
+                                }}
+                                className={`
+                        absolute
+                        rounded-full
+                       
+
+                        ${
+                                    index === 0
+                                        ? "right-[16%] top-[30%] h-2.5 w-2.5 opacity-70"
+                                        : index === 1
+                                            ? "right-[8%] top-[52%] h-1.5 w-1.5 opacity-55"
+                                            : index === 2
+                                                ? "right-[24%] top-[65%] h-1 w-1 opacity-45"
+                                                : index === 3
+                                                    ? "right-[34%] top-[42%] h-2 w-2 opacity-60"
+                                                    : "right-[12%] top-[76%] h-1 w-1 opacity-40"
+                                }
+                    `}
+                            />
+                        ),
+                    )}
+            </div>
+
+
 
             <div
                 className="
@@ -95,6 +215,7 @@ export default function JourneyCollectionCard({
                         ).toLocaleDateString(
                             undefined,
                             {
+                                weekday: "short",
                                 month: "short",
                                 day: "numeric",
                             },
@@ -141,15 +262,16 @@ export default function JourneyCollectionCard({
 
                     <p
                         className="
-                            mt-2
-                            text-xs
-                            uppercase
-                            tracking-[0.18em]
-                            text-slate-600
-                        "
+        mt-2
+        max-w-[280px]
+        text-xs
+        leading-5
+        text-slate-500
+    "
                     >
-                        Discovery Journey
+                        {getJourneySubtitle(journey)}
                     </p>
+
                 </div>
 
                 <div
@@ -157,11 +279,12 @@ export default function JourneyCollectionCard({
                         mt-auto
                         grid
                         grid-cols-2
-                        gap-4
+                        divide-x
+                        divide-white/[0.06]
                         pt-8
                     "
                 >
-                    <div>
+                    <div className="pr-4">
                         <p
                             className="
                                 text-xl
@@ -188,7 +311,7 @@ export default function JourneyCollectionCard({
                         </p>
                     </div>
 
-                    <div>
+                    <div className="pl-4">
                         <p
                             className="
                                 text-xl

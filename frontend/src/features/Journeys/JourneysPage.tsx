@@ -394,22 +394,30 @@ export default function JourneysPage() {
 
                 {/* Controls */}
 
+                {/* Controls */}
+
                 <div
                     className="
-                        mt-10
-                        border-y
-                        border-white/[0.06]
-                        py-5
-                    "
+        mt-10
+        flex
+        flex-col
+        gap-4
+        border-y
+        border-white/[0.06]
+        py-5
+        xl:flex-row
+        xl:items-center
+        xl:justify-between
+    "
                 >
                     {/* Persona filters */}
 
                     <div
                         className="
-                            flex
-                            flex-wrap
-                            gap-2
-                        "
+            flex
+            flex-wrap
+            gap-2
+        "
                     >
                         <FilterButton
                             active={
@@ -454,114 +462,102 @@ export default function JourneysPage() {
                         )}
                     </div>
 
-
                     {/* Archive controls */}
 
                     <div
                         className="
-                            mt-4
-                            flex
-                            flex-col
-                            gap-3
-                            lg:flex-row
-                            lg:items-center
-                            lg:justify-between
-                        "
+            flex
+            shrink-0
+            flex-wrap
+            gap-3
+        "
                     >
-                        <div
+                        <select
+                            value={dateFilter}
+                            onChange={(event) =>
+                                setDateFilter(
+                                    event.target
+                                        .value as DateFilter,
+                                )
+                            }
                             className="
-                                mt-4
-                                flex
-                                flex-wrap
-                                gap-3
-                            "
+                rounded-full
+                border
+                border-white/[0.07]
+                bg-[#111722]
+                px-4
+                py-2.5
+                text-[10px]
+                font-medium
+                uppercase
+                tracking-[0.14em]
+                text-slate-300
+                outline-none
+                transition
+                hover:border-white/[0.12]
+            "
                         >
-                            <select
-                                value={dateFilter}
-                                onChange={(event) =>
-                                    setDateFilter(
-                                        event.target
-                                            .value as DateFilter,
-                                    )
-                                }
-                                className="
-                                    rounded-full
-                                    border
-                                    border-white/[0.07]
-                                    bg-[#111722]
-                                    px-4
-                                    py-2.5
-                                    text-[10px]
-                                    font-medium
-                                    uppercase
-                                    tracking-[0.14em]
-                                    text-slate-300
-                                    outline-none
-                                    transition
-                                    hover:border-white/[0.12]
-                                "
-                            >
-                                <option value="ALL">
-                                    Any date
-                                </option>
+                            <option value="ALL">
+                                Any date
+                            </option>
 
-                                <option value="TODAY">
-                                    Today
-                                </option>
+                            <option value="TODAY">
+                                Today
+                            </option>
 
-                                <option value="THIS_WEEK">
-                                    This week
-                                </option>
+                            <option value="THIS_WEEK">
+                                This week
+                            </option>
 
-                                <option value="THIS_MONTH">
-                                    This month
-                                </option>
-                            </select>
+                            <option value="THIS_MONTH">
+                                This month
+                            </option>
+                        </select>
 
-                            <select
-                                value={sortOption}
-                                onChange={(event) =>
-                                    setSortOption(
-                                        event.target
-                                            .value as SortOption,
-                                    )
-                                }
-                                className="
-                                    rounded-full
-                                    border
-                                    border-white/[0.07]
-                                    bg-[#111722]
-                                    px-4
-                                    py-2.5
-                                    text-[10px]
-                                    font-medium
-                                    uppercase
-                                    tracking-[0.14em]
-                                    text-slate-300
-                                    outline-none
-                                    transition
-                                    hover:border-white/[0.12]
-                                "
-                            >
-                                <option value="NEWEST">
-                                    Newest first
-                                </option>
+                        <select
+                            value={sortOption}
+                            onChange={(event) =>
+                                setSortOption(
+                                    event.target
+                                        .value as SortOption,
+                                )
+                            }
+                            className="
+                rounded-full
+                border
+                border-white/[0.07]
+                bg-[#111722]
+                px-4
+                py-2.5
+                text-[10px]
+                font-medium
+                uppercase
+                tracking-[0.14em]
+                text-slate-300
+                outline-none
+                transition
+                hover:border-white/[0.12]
+            "
+                        >
+                            <option value="NEWEST">
+                                Newest first
+                            </option>
 
-                                <option value="OLDEST">
-                                    Oldest first
-                                </option>
+                            <option value="OLDEST">
+                                Oldest first
+                            </option>
 
-                                <option value="ADVENTURE_HIGH">
-                                    Highest adventure
-                                </option>
+                            <option value="ADVENTURE_HIGH">
+                                Highest adventure
+                            </option>
 
-                                <option value="HIT_RATE_HIGH">
-                                    Highest hit rate
-                                </option>
-                            </select>
-                        </div>
+                            <option value="HIT_RATE_HIGH">
+                                Highest hit rate
+                            </option>
+                        </select>
                     </div>
                 </div>
+
 
 
                 {/* Archive */}

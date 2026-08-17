@@ -48,4 +48,10 @@ public class UserController {
 
     }
 
+    @PostMapping("/me/onboarding/complete")
+    public UserResponse completeOnboarding() {
+
+        return userService.completeOnboarding();
+    }
+
 }

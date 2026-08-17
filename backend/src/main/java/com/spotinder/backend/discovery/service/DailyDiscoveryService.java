@@ -151,9 +151,45 @@ public class DailyDiscoveryService {
                 .toList();
     }
 
+    private List<JourneyTrackPreviewResponse> getJourneyTrackPreviews(
+            DiscoverySession session
+    ) {
+
+        List<Swipe> swipes =
+                swipeRepository
+                        .findByDiscoverySessionId(
+                                session.getId()
+                        );
+
+        List<String> trackIds =
+                swipes.stream()
+                        .map(Swipe::getSpotifyTrackId)
+                        .limit(5)
+                        .toList();
+
+        if (trackIds.isEmpty()) {
+            return List.of();
+        }
+
+        return spotifyService
+                .getTracksByIds(trackIds)
+                .stream()
+                .map(track ->
+                        new JourneyTrackPreviewResponse(
+                                track.id(),
+                                track.albumImage()
+                        )
+                )
+                .toList();
+    }
+
     private JourneySummaryResponse toJourneySummary(
             DiscoverySession session
     ) {
+
+        List<JourneyTrackPreviewResponse> trackPreviews =
+                getJourneyTrackPreviews(session);
+
 
         return new JourneySummaryResponse(
                 session.getId(),
@@ -164,7 +200,8 @@ public class DailyDiscoveryService {
                 session.getSongsLiked(),
                 session.getLikeRate(),
                 session.getAverageAdventureLevel(),
-                session.getCompletedAt()
+                session.getCompletedAt(),
+                trackPreviews
         );
     }
 

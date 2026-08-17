@@ -47,6 +47,9 @@ public class User {
     @Column(nullable = false)
     private boolean blindModeDefault = false;
 
+    @Column(nullable = false)
+    private boolean onboardingCompleted = false;
+
     @CreationTimestamp
     private Instant createdAt;
 
@@ -55,6 +58,22 @@ public class User {
 
     public User() {
 
+    }
+
+    public boolean isOnboardingCompleted() {
+        return onboardingCompleted;
+    }
+
+    public void setOnboardingCompleted(boolean onboardingCompleted) {
+        this.onboardingCompleted = onboardingCompleted;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public UUID getId() {

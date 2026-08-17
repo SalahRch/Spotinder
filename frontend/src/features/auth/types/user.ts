@@ -9,4 +9,5 @@ export interface User {
     product: SpotifyProduct;
     adventureLevel: number;
     blindModeDefault: boolean;
+    onboardingCompleted: boolean;
 }

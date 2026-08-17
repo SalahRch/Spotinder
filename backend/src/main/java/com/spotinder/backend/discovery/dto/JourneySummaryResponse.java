@@ -4,6 +4,7 @@ import com.spotinder.backend.common.enums.DiscoveryPersona;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record JourneySummaryResponse(
@@ -24,7 +25,9 @@ public record JourneySummaryResponse(
 
         Double averageAdventureLevel,
 
-        Instant completedAt
+        Instant completedAt,
+
+        List<JourneyTrackPreviewResponse> trackPreviews
 
 ) {
 }

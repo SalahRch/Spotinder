@@ -14,6 +14,7 @@ public record UserResponse(
         SpotifyProduct product,
         Integer adventureLevel,
         boolean blindModeDefault,
+        boolean onboardingCompleted,
         Instant createdAt
 
 ) {}

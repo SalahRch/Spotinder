@@ -10,6 +10,7 @@ import com.spotinder.backend.users.entity.User;
 import com.spotinder.backend.users.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -89,9 +90,23 @@ public class UserService {
                 user.getProduct(),
                 user.getAdventureLevel(),
                 user.isBlindModeDefault(),
+                user.isOnboardingCompleted(),
                 user.getCreatedAt()
         );
 
     }
 
+    @Transactional
+    public UserResponse completeOnboarding() {
+
+        User user =
+                currentUserService.getCurrentUser();
+
+        user.setOnboardingCompleted(true);
+
+        User savedUser =
+                userRepository.save(user);
+
+        return toResponse(savedUser);
+    }
 }
