@@ -39,4 +39,8 @@ public interface SwipeRepository extends JpaRepository<Swipe, UUID> {
     List<Swipe> findByDiscoverySessionId(
             UUID discoverySessionId
     );
+
+    List<Swipe> findTop3ByUserIdOrderByCreatedAtDesc(
+            String userId
+    );
 }

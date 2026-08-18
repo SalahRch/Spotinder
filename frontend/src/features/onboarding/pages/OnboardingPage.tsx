@@ -44,7 +44,6 @@ export default function OnboardingPage() {
 
     const {
         data: profile,
-        isLoading,
         isError,
     } = useOnboardingProfile();
 
@@ -55,31 +54,42 @@ export default function OnboardingPage() {
         "ANALYSIS",
     );
 
+    const [
+        analysisFinished,
+        setAnalysisFinished,
+    ] = useState(false);
+
+    useEffect(() => {
+        const timeout =
+            window.setTimeout(
+                () => {
+                    setAnalysisFinished(
+                        true,
+                    );
+                },
+                5600,
+            );
+
+        return () => {
+            window.clearTimeout(
+                timeout,
+            );
+        };
+    }, []);
+
     useEffect(() => {
         if (
-            !isLoading &&
             profile &&
+            analysisFinished &&
             step === "ANALYSIS"
         ) {
-            const timeout =
-                window.setTimeout(
-                    () => {
-                        setStep(
-                            "PROFILE",
-                        );
-                    },
-                    1100,
-                );
-
-            return () => {
-                window.clearTimeout(
-                    timeout,
-                );
-            };
+            setStep(
+                "PROFILE",
+            );
         }
     }, [
-        isLoading,
         profile,
+        analysisFinished,
         step,
     ]);
 
@@ -180,7 +190,9 @@ export default function OnboardingPage() {
                                 }}
                                 className="w-full"
                             >
-                                <TasteAnalysis />
+                                <TasteAnalysis
+                                    profile={profile}
+                                />
                             </motion.div>
                         )}
 

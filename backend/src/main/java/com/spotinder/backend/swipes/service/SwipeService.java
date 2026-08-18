@@ -1,5 +1,7 @@
 package com.spotinder.backend.swipes.service;
 
+import com.spotinder.backend.achievements.dto.AchievementUnlockResponse;
+import com.spotinder.backend.achievements.service.AchievementService;
 import com.spotinder.backend.common.enums.SwipeDirection;
 import com.spotinder.backend.common.exception.ResourceNotFoundException;
 import com.spotinder.backend.common.service.CurrentUserService;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,21 +30,28 @@ public class SwipeService {
     private final CurrentUserService currentUserService;
     private final SwipeRepository swipeRepository;
     private final DailyDiscoveryService dailyDiscoveryService;
+    private final AchievementService achievementService;
 
-    public SwipeService(DiscoverySessionRepository discoverySessionRepository, CurrentUserService currentUserService, SwipeRepository swipeRepository, DailyDiscoveryService dailyDiscoveryService) {
+    public SwipeService(DiscoverySessionRepository discoverySessionRepository, CurrentUserService currentUserService, SwipeRepository swipeRepository, DailyDiscoveryService dailyDiscoveryService, AchievementService achievementService) {
         this.discoverySessionRepository = discoverySessionRepository;
         this.currentUserService = currentUserService;
         this.swipeRepository = swipeRepository;
         this.dailyDiscoveryService = dailyDiscoveryService;
+        this.achievementService = achievementService;
     }
 
-    public SwipeResponse recordSwipe(SwipeRequest request) {
+    public SwipeResponse recordSwipe(
+            SwipeRequest request
+    ) {
 
         User user =
-                currentUserService.getCurrentUser();
+                currentUserService
+                        .getCurrentUser();
 
         DiscoverySession session =
-                getActiveTodaySession(user);
+                getActiveTodaySession(
+                        user
+                );
 
         Optional<Swipe> existingSwipe =
                 swipeRepository
@@ -69,28 +79,46 @@ public class SwipeService {
                                 )
                         );
 
-        swipeRepository.save(swipe);
+        swipeRepository.save(
+                swipe
+        );
+
+        boolean journeyCompleted =
+                false;
 
         if (
                 isNewSwipe &&
                         session != null
         ) {
-            updateDailyProgress(
-                    session,
-                    request.direction()
-            );
+            journeyCompleted =
+                    updateDailyProgress(
+                            session,
+                            request.direction()
+                    );
         }
+
+        List<AchievementUnlockResponse>
+                unlockedAchievements =
+                achievementService
+                        .evaluateAfterSwipe(
+                                swipe,
+                                isNewSwipe,
+                                journeyCompleted
+                        );
 
         return new SwipeResponse(
                 swipe.getId(),
                 swipe.getSpotifyTrackId(),
                 swipe.getDirection(),
                 swipe.isBlindMode(),
-                "Swipe recorded successfully."
+                "Swipe recorded successfully.",
+                unlockedAchievements
         );
     }
 
-    private void updateDailyProgress(
+
+
+    private boolean updateDailyProgress(
             DiscoverySession session,
             SwipeDirection direction
     ) {
@@ -128,12 +156,14 @@ public class SwipeService {
                     session
             );
 
-            return ;
+            return true;
         }
 
         discoverySessionRepository.save(
                 session
         );
+
+        return false;
     }
 
     private DiscoverySession getActiveTodaySession(

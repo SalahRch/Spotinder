@@ -28,6 +28,8 @@ import {usePlayer} from "@/features/player/context/SpotifyPlayerContext.tsx";
 import AuroraText from "@/components/animations/AuroraText.tsx";
 import {useDailyDiscoveryRecap} from "@/features/discovery/hooks/useDailyDiscoveryRecap.ts";
 import DailyJourneyRecap from "@/features/discovery/components/DailyJourneyRecap.tsx";
+import { useAchievementQueue } from "@/features/achievements/hooks/useAchievementQueue";
+import AchievementUnlockToast from "@/features/achievements/components/AchievementUnlockToast.tsx";
 
 
 const greetingTransition = {
@@ -222,8 +224,17 @@ export default function DiscoverPage() {
             refetchRecommendations,
     } = useRecommendations();
 
+    const {
+        currentAchievement,
+        addAchievements,
+        dismissCurrent,
+    } = useAchievementQueue();
+
     const recordSwipe =
-        useRecordSwipe();
+        useRecordSwipe({
+            onAchievementsUnlocked:
+            addAchievements,
+        });
 
     const handleSwipe = async (
         direction: SwipeDirection,
@@ -1521,6 +1532,14 @@ xl:h-full
                 onClose={() => {
                     setRecapOpen(false);
                 }}
+            />
+            <AchievementUnlockToast
+                achievement={
+                    currentAchievement
+                }
+                onClose={
+                    dismissCurrent
+                }
             />
         </section>
     );

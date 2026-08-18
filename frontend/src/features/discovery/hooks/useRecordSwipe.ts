@@ -3,9 +3,24 @@ import {
     useQueryClient,
 } from "@tanstack/react-query";
 
-import { swipeService } from "../services/swipe";
+import {
+    swipeService,
+} from "../services/swipe";
 
-export function useRecordSwipe() {
+import type {
+    SwipeResponse,
+} from "../types/swipe";
+
+type UseRecordSwipeOptions = {
+    onAchievementsUnlocked?: (
+        achievements:
+        SwipeResponse["unlockedAchievements"],
+    ) => void;
+};
+
+export function useRecordSwipe(
+    options?: UseRecordSwipeOptions,
+) {
     const queryClient =
         useQueryClient();
 
@@ -13,7 +28,12 @@ export function useRecordSwipe() {
         mutationFn:
         swipeService.recordSwipe,
 
-        onSuccess: async () => {
+        onSuccess: async (response) => {
+            options?.onAchievementsUnlocked?.(
+                response.unlockedAchievements ??
+                [],
+            );
+
             await Promise.all([
                 queryClient.invalidateQueries({
                     queryKey: ["likes"],
