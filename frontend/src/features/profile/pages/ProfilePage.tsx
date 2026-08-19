@@ -3,6 +3,7 @@ import ProfileHero from "@/features/profile/components/ProfileHero.tsx";
 import DiscoveryPreferences from "@/features/profile/components/DiscoveryPreferences.tsx";
 import { useInsights } from "@/features/insights/hooks/useInsights";
 import ProfileJourney from "@/features/profile/components/ProfileJourney.tsx";
+import AchievementCollection from "@/features/achievements/components/AchievementCollection.tsx";
 
 export default function ProfilePage() {
     const {
@@ -63,6 +64,9 @@ export default function ProfilePage() {
                 <DiscoveryPreferences
                     profile={profile}
                 />
+
+                <AchievementCollection />
+
                 {!insightsLoading && insights && (
                 <ProfileJourney
                     insights={insights}

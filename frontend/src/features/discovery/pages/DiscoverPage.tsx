@@ -78,18 +78,34 @@ export default function DiscoverPage() {
     const [
         recapOpen,
         setRecapOpen,
-    ] = useState(true);
+    ] = useState(false);
 
     const previousCompletedRef =
-        useRef(false);
+        useRef<boolean | null>(
+            null,
+        );
 
     useEffect(() => {
+        if (!dailyDiscovery) {
+            return;
+        }
+
+        const isCompleted =
+            dailyDiscovery.completed;
+
+        if (
+            previousCompletedRef.current ===
+            null
+        ) {
+            previousCompletedRef.current =
+                isCompleted;
+
+            return;
+        }
+
         const wasCompleted =
             previousCompletedRef.current;
 
-        const isCompleted =
-            dailyDiscovery?.completed ??
-            false;
 
         if (
             !wasCompleted &&
@@ -101,7 +117,7 @@ export default function DiscoverPage() {
         previousCompletedRef.current =
             isCompleted;
     }, [
-        dailyDiscovery?.completed,
+        dailyDiscovery,
     ]);
 
 
@@ -1525,14 +1541,14 @@ xl:h-full
                     </div>
                 </aside>
             </div>
-            <DailyJourneyRecap
+            {dailyComplete && (<DailyJourneyRecap
                 open={recapOpen}
                 recap={dailyRecap}
                 loading={dailyRecapLoading}
                 onClose={() => {
                     setRecapOpen(false);
                 }}
-            />
+            />)}
             <AchievementUnlockToast
                 achievement={
                     currentAchievement

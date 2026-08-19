@@ -51,7 +51,7 @@ public class DiscoverySession {
     private Instant completedAt;
 
     @Column(nullable = false)
-    private Integer goal = 20;
+    private Integer goal = 5;
 
     @Column(
             name = "songs_seen",
