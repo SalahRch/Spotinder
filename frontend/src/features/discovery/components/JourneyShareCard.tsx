@@ -1,31 +1,39 @@
 import type {
     DailyDiscoveryRecap,
 } from "../types/discovery";
-import JourneyConstellation from "@/features/discovery/components/JourneyConstellation.tsx";
-import {useJourneyAlbumColors} from "@/features/discovery/hooks/useJourneyAlbumColors.ts";
-import {pickJourneyAuraColors} from "@/features/discovery/utils/journeyPalette.ts";
+
+import {
+    useJourneyAlbumColors,
+} from "@/features/discovery/hooks/useJourneyAlbumColors";
+
+import {
+    pickJourneyAuraColors,
+} from "@/features/discovery/utils/journeyPalette";
+
+import JourneyShareArtwork
+    from "./JourneyShareArtwork";
 
 type JourneyShareCardProps = {
     recap: DailyDiscoveryRecap;
 };
 
 function formatPersona(
-    persona: DailyDiscoveryRecap["discoveryPersona"],
+    persona:
+    DailyDiscoveryRecap["discoveryPersona"],
 ) {
     return persona
         .toLowerCase()
         .replaceAll("_", " ")
-        .replace(/\b\w/g, (letter) =>
-            letter.toUpperCase(),
+        .replace(
+            /\b\w/g,
+            (letter) =>
+                letter.toUpperCase(),
         );
 }
 
 export default function JourneyShareCard({
                                              recap,
                                          }: JourneyShareCardProps) {
-
-
-
     const albumColors =
         useJourneyAlbumColors(
             recap.tracks ?? [],
@@ -35,26 +43,27 @@ export default function JourneyShareCard({
         primaryAura,
         secondaryAura,
     ] = pickJourneyAuraColors(
-        Object.values(albumColors),
+        Object.values(
+            albumColors,
+        ),
     );
-
 
     return (
         <div
             className="
                 relative
-                aspect-[9/16]
-                w-full
-                max-w-[390px]
+                aspect-[4/5]
+                w-[390px]
+                max-w-full
                 overflow-hidden
-                rounded-[32px]
+                rounded-[34px]
                 border
-                border-white/[0.08]
-                bg-[#080D16]
-                shadow-[0_35px_100px_rgba(0,0,0,0.55)]
+                border-white/[0.09]
+                bg-[#070C14]
+                shadow-[0_40px_120px_rgba(0,0,0,0.6)]
             "
         >
-            {/* Aura */}
+            {/* ================= ALBUM AURAS ================= */}
 
             <div
                 aria-hidden="true"
@@ -66,11 +75,11 @@ export default function JourneyShareCard({
                     pointer-events-none
                     absolute
                     -left-28
-                    top-16
-                    h-[320px]
-                    w-[320px]
+                    top-12
+                    h-[330px]
+                    w-[330px]
                     rounded-full
-                    opacity-[0.16]
+                    opacity-[0.18]
                     blur-[120px]
                 "
             />
@@ -84,18 +93,30 @@ export default function JourneyShareCard({
                 className="
                     pointer-events-none
                     absolute
-                    -right-28
-                    bottom-24
+                    -right-24
+                    bottom-10
                     h-[320px]
                     w-[320px]
                     rounded-full
-                    opacity-[0.14]
+                    opacity-[0.15]
                     blur-[120px]
                 "
             />
 
-            {/* Persona motif */}
+            {/* subtle grain/grid */}
 
+            <div
+                aria-hidden="true"
+                className="
+                    pointer-events-none
+                    absolute
+                    inset-0
+                    opacity-[0.16]
+                    [background-image:radial-gradient(rgba(255,255,255,0.10)_0.6px,transparent_0.6px)]
+                    [background-size:14px_14px]
+                    [mask-image:linear-gradient(to_bottom,black,transparent_88%)]
+                "
+            />
 
             <div
                 className="
@@ -104,26 +125,26 @@ export default function JourneyShareCard({
                     flex
                     h-full
                     flex-col
-                    px-8
-                    py-8
+                    px-7
+                    py-7
                 "
             >
-                {/* Brand */}
+                {/* ================= BRAND ================= */}
 
                 <div
                     className="
                         flex
-                        items-center
+                        items-start
                         justify-between
                     "
                 >
                     <div>
                         <p
                             className="
-                                text-[10px]
+                                text-[9px]
                                 font-semibold
                                 uppercase
-                                tracking-[0.34em]
+                                tracking-[0.36em]
                                 text-violet-300
                             "
                         >
@@ -133,7 +154,7 @@ export default function JourneyShareCard({
                         <p
                             className="
                                 mt-1
-                                text-[9px]
+                                text-[8px]
                                 uppercase
                                 tracking-[0.2em]
                                 text-slate-600
@@ -146,227 +167,300 @@ export default function JourneyShareCard({
                     <div
                         className="
                             flex
-                            h-8
-                            w-8
                             items-center
-                            justify-center
-                            rounded-full
-                            border
-                            border-violet-300/15
-                            bg-violet-400/[0.07]
-                            text-xs
-                            font-semibold
-                            text-violet-200
-                        "
-                    >
-                        S
-                    </div>
-                </div>
-
-                {/* Hero */}
-
-                <div
-                    className="
-                        mt-5
-                        text-center
-                    "
-                >
-                    <p
-                        className="
-                            text-[9px]
+                            gap-2
+                            text-[8px]
                             uppercase
-                            tracking-[0.26em]
+                            tracking-[0.18em]
                             text-slate-600
                         "
                     >
-                        {new Date(
-                            `${recap.date}T00:00:00`,
-                        ).toLocaleDateString(
-                            undefined,
-                            {
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric",
-                            },
-                        )}
-                    </p>
+                        <span>
+                            {new Date(
+                                `${recap.date}T00:00:00`,
+                            ).toLocaleDateString(
+                                undefined,
+                                {
+                                    month:
+                                        "short",
+                                    day:
+                                        "numeric",
+                                },
+                            )}
+                        </span>
 
+                        <span
+                            className="
+                                h-1
+                                w-1
+                                rotate-45
+                                bg-violet-300/70
+                            "
+                        />
+                    </div>
+                </div>
+
+                {/* ================= TITLE ================= */}
+
+                <div
+                    className="
+                        mt-7
+                        text-center
+                    "
+                >
                     <h2
                         className="
-                            mx-auto
-                            mt-5
                             bg-gradient-to-r
-                            from-cyan-200
-                            via-violet-200
-                            to-fuchsia-300
+                            from-cyan-100
+                            via-white
+                            to-violet-200
                             bg-clip-text
-                            text-4xl
+                            text-[38px]
                             font-semibold
                             leading-[0.98]
-                            tracking-[-0.055em]
+                            tracking-[-0.06em]
                             text-transparent
                         "
                     >
-                        {recap.journeyTitle}
+                        {
+                            recap.journeyTitle
+                        }
                     </h2>
 
                     <div
                         className="
-        relative
-        mx-auto
-        mt-5
-        flex
-        h-[170px]
-        w-full
-        items-center
-        justify-center
-    "
+                            mt-4
+                            flex
+                            items-center
+                            justify-center
+                            gap-2
+                        "
                     >
-                        <JourneyConstellation
-                            recap={recap}
-                            albumColors={albumColors}
+                        <span
+                            className="
+                                h-1
+                                w-1
+                                rotate-45
+                                bg-violet-300
+                                shadow-[0_0_10px_rgba(196,181,253,0.8)]
+                            "
                         />
 
-                        <div
+                        <p
                             className="
-            relative
-            z-10
-            text-center
-        "
+                                text-[9px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.28em]
+                                text-violet-200/80
+                            "
                         >
-                            <p
-                                className="
-                text-[9px]
-                font-semibold
-                uppercase
-                tracking-[0.3em]
-                text-slate-500
-            "
-                            >
-                                You discovered as
-                            </p>
-
-                            <p
-                                className="
-                mt-3
-                bg-gradient-to-r
-                from-cyan-200
-                via-violet-200
-                to-fuchsia-200
-                bg-clip-text
-                text-lg
-                font-semibold
-                uppercase
-                tracking-[0.3em]
-                text-transparent
-            "
-                            >
-                                The{" "}
-                                {formatPersona(
-                                    recap.discoveryPersona,
-                                )}
-                            </p>
-
-                            <p
-                                className="
-            mt-3
-            text-[8px]
-            uppercase
-            tracking-[0.22em]
-            text-slate-600
-        "
-                            >
-                                {recap.explored} songs shaped this journey
-                            </p>
-                        </div>
+                            The{" "}
+                            {formatPersona(
+                                recap.discoveryPersona,
+                            )}
+                        </p>
                     </div>
                 </div>
 
-                {/* Stats */}
+                {/* ================= POSTER ART ================= */}
 
                 <div
                     className="
-        mt-7
-        grid
-        grid-cols-2
-        gap-8
-    "
+                        -mx-4
+                        mt-2
+                    "
                 >
-                    <ShareStat
-                        value={`${Math.round(
-                            recap.likeRate,
-                        )}%`}
-                        label="Hit rate"
-                    />
-
-                    <ShareStat
-                        value={`${Math.round(
-                            recap.averageAdventureLevel,
-                        )}%`}
-                        label="Adventure"
+                    <JourneyShareArtwork
+                        recap={recap}
+                        albumColors={
+                            albumColors
+                        }
                     />
                 </div>
 
+                {/* ================= RECAP QUOTE ================= */}
 
-                {/* Quote */}
+                <p
+                    className="
+                        mx-auto
+                        -mt-1
+                        max-w-[300px]
+                        text-center
+                        text-[12px]
+                        leading-5
+                        text-slate-300
+                    "
+                >
+                    “{
+                    recap.recapMessage
+                }”
+                </p>
+
+                {/* ================= STATS ================= */}
 
                 <div
                     className="
-                        mt-10
-                        text-center
+                        mt-5
+                        grid
+                        grid-cols-3
+                        divide-x
+                        divide-white/[0.07]
+                    "
+                >
+                    <PosterStat
+                        value={
+                            recap.explored
+                        }
+                        label="Explored"
+                    />
+
+                    <PosterStat
+                        value={
+                            recap.liked
+                        }
+                        label="Liked"
+                    />
+
+                    <PosterStat
+                        value={`${Math.round(
+                            recap.likeRate,
+                        )}%`}
+                        label="Hit"
+                    />
+                </div>
+
+                {/* ================= ADVENTURE ================= */}
+
+                <div
+                    className="
+                        mt-5
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            items-center
+                            justify-between
+                            text-[8px]
+                            font-semibold
+                            uppercase
+                            tracking-[0.18em]
+                        "
+                    >
+                        <span
+                            className="
+                                text-cyan-200/60
+                            "
+                        >
+                            Adventure
+                        </span>
+
+                        <span
+                            className="
+                                text-slate-300
+                            "
+                        >
+                            {Math.round(
+                                recap.averageAdventureLevel,
+                            )}
+                        </span>
+                    </div>
+
+                    <div
+                        className="
+                            mt-2
+                            h-px
+                            overflow-hidden
+                            bg-white/[0.08]
+                        "
+                    >
+                        <div
+                            style={{
+                                width:
+                                    `${Math.min(
+                                        recap.averageAdventureLevel,
+                                        100,
+                                    )}%`,
+                            }}
+                            className="
+                                h-full
+                                bg-gradient-to-r
+                                from-cyan-300
+                                via-violet-300
+                                to-fuchsia-300
+                            "
+                        />
+                    </div>
+                </div>
+
+                {/* ================= FOOTER ================= */}
+
+                <div
+                    className="
+                        mt-auto
+                        flex
+                        items-center
+                        justify-between
+                        pt-5
                     "
                 >
                     <p
                         className="
-                            mx-auto
-                            max-w-[280px]
-                            text-sm
-                            leading-6
-                            text-slate-300
+                            text-[8px]
+                            uppercase
+                            tracking-[0.2em]
+                            text-slate-700
                         "
                     >
-                        {recap.recapMessage}
+                        Your taste.
+                        Your journey.
                     </p>
 
                     <div
                         className="
-                            mx-auto
-                            mt-6
-                            h-px
-                            w-14
-                            bg-gradient-to-r
-                            from-transparent
-                            via-violet-300/50
-                            to-transparent
-                        "
-                    />
-
-                    <p
-                        className="
-                            mt-5
-                            text-[9px]
-                            uppercase
-                            tracking-[0.24em]
-                            text-slate-600
+                            flex
+                            items-center
+                            gap-2
                         "
                     >
-                        Your taste. Your journey.
-                    </p>
+                        <span
+                            className="
+                                text-[8px]
+                                font-semibold
+                                uppercase
+                                tracking-[0.22em]
+                                text-violet-300/70
+                            "
+                        >
+                            Spotinder
+                        </span>
+
+                        <span
+                            className="
+                                h-1.5
+                                w-1.5
+                                rotate-45
+                                border
+                                border-violet-300/60
+                            "
+                        />
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
 
-type ShareStatProps = {
+type PosterStatProps = {
     value: string | number;
     label: string;
 };
 
-function ShareStat({
-                       value,
-                       label,
-                   }: ShareStatProps) {
+function PosterStat({
+                        value,
+                        label,
+                    }: PosterStatProps) {
     return (
         <div
             className="
@@ -375,7 +469,7 @@ function ShareStat({
         >
             <p
                 className="
-                    text-2xl
+                    text-lg
                     font-semibold
                     tracking-[-0.04em]
                     text-white
@@ -387,7 +481,7 @@ function ShareStat({
             <p
                 className="
                     mt-1
-                    text-[9px]
+                    text-[7px]
                     font-medium
                     uppercase
                     tracking-[0.18em]

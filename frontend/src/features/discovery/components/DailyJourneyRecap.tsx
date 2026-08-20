@@ -4,58 +4,44 @@ import {
 } from "framer-motion";
 
 import {
-    useState,
-    type ReactNode,
-} from "react";
-
-import {
     FiArrowRight,
     FiEyeOff,
     FiHeart,
-    FiShare2,
     FiX,
 } from "react-icons/fi";
 
 import type {
     DailyDiscoveryRecap,
 } from "../types/discovery";
-import JourneySharePreview from "@/features/discovery/components/JourneySharePreview.tsx";
+import JourneyPersonaAtmosphere from "@/features/discovery/components/JourneyPersonaAtmosphere.tsx";
 
 type DailyJourneyRecapProps = {
     open: boolean;
     recap?: DailyDiscoveryRecap;
     loading?: boolean;
     onClose: () => void;
+
+    /*
+     * We'll wire this to Journey Detail
+     * once the route exists.
+     */
+    onViewJourney?: (
+        recap: DailyDiscoveryRecap,
+    ) => void;
 };
 
 function formatPersona(
-    persona: DailyDiscoveryRecap["discoveryPersona"],
+    persona:
+    DailyDiscoveryRecap["discoveryPersona"],
 ) {
     return persona
         .toLowerCase()
         .replaceAll("_", " ")
-        .replace(/\b\w/g, (letter) =>
-            letter.toUpperCase(),
+        .replace(
+            /\b\w/g,
+            (letter) =>
+                letter.toUpperCase(),
         );
-}
-
-function getBlindMessage(
-    liked: number,
-    explored: number,
-) {
-    if (explored === 0) {
-        return "You kept every discovery in the light.";
-    }
-
-    if (liked === explored) {
-        return "Every blind discovery became a favorite.";
-    }
-
-    if (liked === 0) {
-        return "None of your blind discoveries made the cut.";
-    }
-
-    return `${liked} of your ${explored} blind discoveries became favorites.`;
 }
 
 export default function DailyJourneyRecap({
@@ -63,15 +49,9 @@ export default function DailyJourneyRecap({
                                               recap,
                                               loading = false,
                                               onClose,
+                                              onViewJourney,
                                           }: DailyJourneyRecapProps) {
-
-    const [
-        sharePreviewOpen,
-        setSharePreviewOpen,
-    ] = useState(false);
-
     return (
-        <>
         <AnimatePresence>
             {open && (
                 <motion.div
@@ -85,7 +65,7 @@ export default function DailyJourneyRecap({
                         opacity: 0,
                     }}
                     transition={{
-                        duration: 0.25,
+                        duration: 0.22,
                     }}
                     className="
                         fixed
@@ -94,50 +74,24 @@ export default function DailyJourneyRecap({
                         flex
                         items-center
                         justify-center
-                        overflow-y-auto
-                        bg-[#060910]/85
-                        p-6
-                        backdrop-blur-2xl
+                        bg-[#060910]/82
+                        px-6
+                        py-8
+                        backdrop-blur-xl
                     "
                 >
-                    {/* Ambient aurora */}
+                    {recap && (
+                        <JourneyPersonaAtmosphere
+                            persona={recap.discoveryPersona}
+                        />
+                    )}
 
-                    <motion.div
-                        aria-hidden="true"
-                        initial={{
-                            opacity: 0,
-                            scale: 0.8,
-                        }}
-                        animate={{
-                            opacity: 1,
-                            scale: 1,
-                        }}
-                        transition={{
-                            duration: 0.8,
-                        }}
-                        className="
-                            pointer-events-none
-                            absolute
-                            left-1/2
-                            top-1/2
-                            h-[650px]
-                            w-[650px]
-                            -translate-x-1/2
-                            -translate-y-1/2
-                            rounded-full
-                            bg-gradient-to-br
-                            from-cyan-400/15
-                            via-violet-500/20
-                            to-fuchsia-500/10
-                            blur-[150px]
-                        "
-                    />
 
                     <motion.section
                         initial={{
                             opacity: 0,
-                            y: 30,
-                            scale: 0.96,
+                            y: 22,
+                            scale: 0.97,
                         }}
                         animate={{
                             opacity: 1,
@@ -146,11 +100,11 @@ export default function DailyJourneyRecap({
                         }}
                         exit={{
                             opacity: 0,
-                            y: 15,
+                            y: 12,
                             scale: 0.98,
                         }}
                         transition={{
-                            duration: 0.48,
+                            duration: 0.42,
                             ease: [
                                 0.22,
                                 1,
@@ -161,79 +115,28 @@ export default function DailyJourneyRecap({
                         className="
                             relative
                             w-full
-                            max-w-[760px]
+                            max-w-[620px]
                             overflow-hidden
-                            rounded-[36px]
+                            rounded-[30px]
                             border
                             border-white/[0.08]
-                            bg-[#0D131E]/90
-                            p-8
-                            shadow-[0_40px_120px_rgba(0,0,0,0.5)]
-                            backdrop-blur-3xl
-                            md:p-10
+                            bg-[#0D131E]/95
+                            px-7
+                            py-7
+                            shadow-[0_35px_110px_rgba(0,0,0,0.5)]
+                            backdrop-blur-2xl
+                            md:px-9
+                            md:py-8
                         "
                     >
-                        {/* Spotinder aura */}
+                        {/* top glow */}
 
-                        <div
-                            aria-hidden="true"
-                            className="
-        pointer-events-none
-        absolute
-        -left-32
-        -top-32
-        h-[360px]
-        w-[360px]
-        rounded-full
-        bg-violet-500/[0.10]
-        blur-[110px]
-    "
-                        />
-
-                        <div
-                            aria-hidden="true"
-                            className="
-        pointer-events-none
-        absolute
-        -right-32
-        -top-20
-        h-[340px]
-        w-[340px]
-        rounded-full
-        bg-cyan-400/[0.08]
-        blur-[110px]
-    "
-                        />
-
-                        <motion.div
-                            aria-hidden="true"
-                            animate={{
-                                rotate: 360,
-                            }}
-                            transition={{
-                                duration: 35,
-                                repeat: Infinity,
-                                ease: "linear",
-                            }}
-                            className="
-        pointer-events-none
-        absolute
-        left-1/2
-        top-[125px]
-        h-[210px]
-        w-[500px]
-        -translate-x-1/2
-        rounded-[50%]
-        border
-        border-violet-300/[0.035]
-    "
-                        />
                         <div
                             aria-hidden="true"
                             className="
                                 pointer-events-none
                                 absolute
-                                inset-x-20
+                                inset-x-16
                                 top-0
                                 h-px
                                 bg-gradient-to-r
@@ -243,37 +146,56 @@ export default function DailyJourneyRecap({
                             "
                         />
 
+                        {/* internal aura */}
+
+                        <div
+                            aria-hidden="true"
+                            className="
+                                pointer-events-none
+                                absolute
+                                -right-24
+                                -top-24
+                                h-[260px]
+                                w-[260px]
+                                rounded-full
+                                bg-violet-500/[0.08]
+                                blur-[90px]
+                            "
+                        />
+
                         <button
                             type="button"
                             aria-label="Close recap"
                             onClick={onClose}
                             className="
                                 absolute
-                                right-6
-                                top-6
+                                right-4
+                                top-4
+                                z-20
                                 flex
-                                h-10
-                                w-10
+                                h-9
+                                w-9
                                 items-center
                                 justify-center
                                 rounded-full
                                 border
-                                border-white/[0.08]
-                                bg-white/[0.04]
-                                text-slate-400
+                                border-white/[0.07]
+                                bg-white/[0.03]
+                                text-slate-500
                                 transition
-                                hover:bg-white/[0.08]
+                                hover:bg-white/[0.07]
                                 hover:text-white
                             "
                         >
                             <FiX />
                         </button>
 
-                        {loading || !recap ? (
+                        {loading ||
+                        !recap ? (
                             <div
                                 className="
                                     flex
-                                    min-h-[480px]
+                                    min-h-[360px]
                                     items-center
                                     justify-center
                                 "
@@ -284,7 +206,8 @@ export default function DailyJourneyRecap({
                                     }}
                                     transition={{
                                         duration: 1,
-                                        repeat: Infinity,
+                                        repeat:
+                                        Infinity,
                                         ease: "linear",
                                     }}
                                     className="
@@ -298,50 +221,63 @@ export default function DailyJourneyRecap({
                                 />
                             </div>
                         ) : (
-                            <>
+                            <div
+                                className="
+                                    relative
+                                    z-10
+                                "
+                            >
+                                {/* Header */}
+
                                 <motion.header
-                                    initial={{ opacity: 0, y: 14 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{
+                                        opacity: 0,
+                                        y: 10,
+                                    }}
+                                    animate={{
+                                        opacity: 1,
+                                        y: 0,
+                                    }}
                                     transition={{
-                                        delay: 0.1,
-                                        duration: 0.55,
-                                        ease: [0.22, 1, 0.36, 1],
+                                        delay: 0.08,
+                                        duration: 0.5,
                                     }}
                                     className="
-        relative
-        z-10
-        text-center
-    "
+                                        text-center
+                                    "
                                 >
                                     <p
                                         className="
-            text-[10px]
-            font-semibold
-            uppercase
-            tracking-[0.34em]
-            text-violet-300/70
-        "
+                                            text-[9px]
+                                            font-semibold
+                                            uppercase
+                                            tracking-[0.32em]
+                                            text-violet-300/65
+                                        "
                                     >
                                         Discovery Journey
                                     </p>
 
                                     <p
                                         className="
-            mt-3
-            text-[10px]
-            uppercase
-            tracking-[0.22em]
-            text-slate-600
-        "
+                                            mt-2
+                                            text-[9px]
+                                            uppercase
+                                            tracking-[0.18em]
+                                            text-slate-700
+                                        "
                                     >
                                         {new Date(
                                             `${recap.date}T00:00:00`,
                                         ).toLocaleDateString(
                                             undefined,
                                             {
-                                                month: "long",
-                                                day: "numeric",
-                                                year: "numeric",
+                                                month:
+                                                    "long",
+                                                day:
+                                                    "numeric",
+                                                year:
+                                                    "numeric",
                                             },
                                         )}
                                     </p>
@@ -349,255 +285,183 @@ export default function DailyJourneyRecap({
                                     <motion.h1
                                         initial={{
                                             opacity: 0,
-                                            y: 12,
-                                            filter: "blur(8px)",
+                                            y: 10,
+                                            filter:
+                                                "blur(6px)",
                                         }}
                                         animate={{
                                             opacity: 1,
                                             y: 0,
-                                            filter: "blur(0px)",
+                                            filter:
+                                                "blur(0px)",
                                         }}
                                         transition={{
-                                            delay: 0.2,
-                                            duration: 0.65,
+                                            delay: 0.16,
+                                            duration: 0.58,
                                         }}
                                         className="
-            mx-auto
-            mt-7
-            max-w-2xl
-            bg-gradient-to-r
-            from-cyan-200
-            via-violet-200
-            to-fuchsia-300
-            bg-clip-text
-            text-4xl
-            font-semibold
-            tracking-[-0.055em]
-            text-transparent
-            md:text-[52px]
-            md:leading-[1.05]
-        "
+                                            mx-auto
+                                            mt-5
+                                            max-w-xl
+                                            bg-gradient-to-r
+                                            from-cyan-100
+                                            via-white
+                                            to-violet-200
+                                            bg-clip-text
+                                            text-3xl
+                                            font-semibold
+                                            tracking-[-0.05em]
+                                            text-transparent
+                                            md:text-[38px]
+                                        "
                                     >
-                                        {recap.journeyTitle}
+                                        {
+                                            recap.journeyTitle
+                                        }
                                     </motion.h1>
 
-                                    <motion.div
-                                        initial={{
-                                            opacity: 0,
-                                            scale: 0.92,
-                                        }}
-                                        animate={{
-                                            opacity: 1,
-                                            scale: 1,
-                                        }}
-                                        transition={{
-                                            delay: 0.38,
-                                            duration: 0.5,
-                                        }}
+                                    <div
                                         className="
-            relative
-            mx-auto
-            mt-7
-            flex
-            max-w-md
-            flex-col
-            items-center
-        "
+                                            mt-5
+                                            flex
+                                            items-center
+                                            justify-center
+                                            gap-2
+                                        "
                                     >
-                                        {/* little journey symbol */}
-
-                                        <motion.div
+                                        <motion.span
                                             animate={{
-                                                scale: [1, 1.15, 1],
-                                                opacity: [0.55, 1, 0.55],
+                                                opacity: [
+                                                    0.45,
+                                                    1,
+                                                    0.45,
+                                                ],
+                                                scale: [
+                                                    1,
+                                                    1.18,
+                                                    1,
+                                                ],
                                             }}
                                             transition={{
-                                                duration: 3,
-                                                repeat: Infinity,
-                                                ease: "easeInOut",
+                                                duration: 2.8,
+                                                repeat:
+                                                Infinity,
+                                                ease:
+                                                    "easeInOut",
                                             }}
                                             className="
-                mb-3
-                h-1.5
-                w-1.5
-                rotate-45
-                bg-violet-300
-                shadow-[0_0_18px_rgba(196,181,253,0.8)]
-            "
+                                                h-1.5
+                                                w-1.5
+                                                rotate-45
+                                                bg-violet-300
+                                                shadow-[0_0_14px_rgba(196,181,253,0.75)]
+                                            "
                                         />
 
                                         <span
                                             className="
-                text-[9px]
-                font-semibold
-                uppercase
-                tracking-[0.3em]
-                text-slate-600
-            "
+                                                text-[9px]
+                                                font-medium
+                                                uppercase
+                                                tracking-[0.2em]
+                                                text-slate-600
+                                            "
                                         >
-            You discovered as
-        </span>
-
-                                        <span
-                                            className="
-                mt-2
-                bg-gradient-to-r
-                from-violet-300
-                to-fuchsia-300
-                bg-clip-text
-                text-sm
-                font-semibold
-                uppercase
-                tracking-[0.32em]
-                text-transparent
-            "
-                                        >
-            The{" "}
-                                            {formatPersona(
-                                                recap.discoveryPersona,
-                                            )}
-        </span>
-                                    </motion.div>
+                                            You discovered as
+                                        </span>
+                                    </div>
 
                                     <p
                                         className="
-            mx-auto
-            mt-5
-            max-w-lg
-            text-sm
-            leading-7
-            text-slate-400
-        "
+                                            mt-2
+                                            bg-gradient-to-r
+                                            from-violet-300
+                                            to-fuchsia-300
+                                            bg-clip-text
+                                            text-xs
+                                            font-semibold
+                                            uppercase
+                                            tracking-[0.28em]
+                                            text-transparent
+                                        "
                                     >
-                                        {recap.recapMessage}
+                                        The{" "}
+                                        {formatPersona(
+                                            recap.discoveryPersona,
+                                        )}
+                                    </p>
+
+                                    <p
+                                        className="
+                                            mx-auto
+                                            mt-4
+                                            max-w-[460px]
+                                            text-sm
+                                            leading-6
+                                            text-slate-400
+                                        "
+                                    >
+                                        {
+                                            recap.recapMessage
+                                        }
                                     </p>
                                 </motion.header>
 
-                                <div
-                                    className="
-                                        my-9
-                                        h-px
-                                        bg-white/[0.06]
-                                    "
-                                />
+                                {/* compact stats */}
 
                                 <div
                                     className="
+                                        mt-7
                                         grid
-                                        grid-cols-2
-                                        gap-3
-                                        md:grid-cols-4
+                                        grid-cols-3
+                                        divide-x
+                                        divide-white/[0.06]
+                                        rounded-[20px]
+                                        border
+                                        border-white/[0.06]
+                                        bg-white/[0.02]
+                                        px-2
+                                        py-4
                                     "
                                 >
-                                    <Stat
-                                        value={recap.explored}
+                                    <CompactStat
+                                        value={
+                                            recap.explored
+                                        }
                                         label="Explored"
                                     />
 
-                                    <Stat
-                                        value={recap.liked}
-                                        label="Favorites"
-                                        icon={<FiHeart />}
+                                    <CompactStat
+                                        value={
+                                            recap.liked
+                                        }
+                                        label="Liked"
+                                        icon={
+                                            <FiHeart />
+                                        }
                                     />
 
-                                    <Stat
+                                    <CompactStat
                                         value={`${Math.round(
                                             recap.likeRate,
                                         )}%`}
                                         label="Hit rate"
                                     />
-
-                                    <Stat
-                                        value={recap.blindExplored}
-                                        label="Heard blind"
-                                    />
                                 </div>
+
+                                {/* Adventure */}
 
                                 <div
                                     className="
-                                        mt-4
-                                        grid
-                                        gap-3
-                                        md:grid-cols-2
+                                        mt-5
+                                        rounded-[20px]
+                                        border
+                                        border-white/[0.06]
+                                        bg-white/[0.02]
+                                        px-5
+                                        py-4
                                     "
                                 >
-                                    <div
-                                        className="
-                                            rounded-[22px]
-                                            border
-                                            border-white/[0.06]
-                                            bg-white/[0.025]
-                                            p-5
-                                        "
-                                    >
-                                        <div
-                                            className="
-                                                flex
-                                                items-center
-                                                gap-3
-                                                text-violet-300
-                                            "
-                                        >
-                                            <FiEyeOff />
-
-                                            <p
-                                                className="
-                                                    text-xs
-                                                    font-semibold
-                                                    uppercase
-                                                    tracking-[0.18em]
-                                                "
-                                            >
-                                                Blind instinct
-                                            </p>
-                                        </div>
-
-                                        <p
-                                            className="
-                                                mt-4
-                                                text-2xl
-                                                font-semibold
-                                                text-white
-                                            "
-                                        >
-                                            {recap.blindLiked}
-                                            <span
-                                                className="
-                                                    text-slate-600
-                                                "
-                                            >
-                                                {" "}
-                                                /{" "}
-                                                {
-                                                    recap.blindExplored
-                                                }
-                                            </span>
-                                        </p>
-
-                                        <p
-                                            className="
-                                                mt-1
-                                                text-xs
-                                                leading-5
-                                                text-slate-500
-                                            "
-                                        >
-                                            {getBlindMessage(
-                                                recap.blindLiked,
-                                                recap.blindExplored,
-                                            )}
-                                        </p>
-                                    </div>
-
-                                    <div
-                                        className="
-        rounded-[22px]
-        border
-        border-white/[0.06]
-        bg-white/[0.025]
-        p-5
-    "
-                                    >
                                     <div
                                         className="
                                             flex
@@ -607,39 +471,39 @@ export default function DailyJourneyRecap({
                                     >
                                         <p
                                             className="
-                                                text-xs
+                                                text-[9px]
                                                 font-semibold
                                                 uppercase
                                                 tracking-[0.18em]
-                                                text-cyan-300
+                                                text-cyan-300/70
                                             "
                                         >
-                                            Adventure Level
+                                            Adventure
                                         </p>
 
                                         <span
                                             className="
-                text-xl
-                font-semibold
-                tracking-[-0.03em]
-                text-white
-            "
+                                                text-sm
+                                                font-semibold
+                                                text-white
+                                            "
                                         >
-            {Math.round(
-                recap.averageAdventureLevel,
-            )}
+                                            {Math.round(
+                                                recap.averageAdventureLevel,
+                                            )}
                                             %
-        </span>
+                                        </span>
                                     </div>
-                                        <div
-                                            className="
-            mt-4
-            h-1.5
-            overflow-hidden
-            rounded-full
-            bg-white/10
-        "
-                                        >
+
+                                    <div
+                                        className="
+                                            mt-3
+                                            h-1
+                                            overflow-hidden
+                                            rounded-full
+                                            bg-white/[0.06]
+                                        "
+                                    >
                                         <motion.div
                                             initial={{
                                                 width: 0,
@@ -651,7 +515,7 @@ export default function DailyJourneyRecap({
                                                 )}%`,
                                             }}
                                             transition={{
-                                                delay: 0.4,
+                                                delay: 0.28,
                                                 duration: 0.7,
                                                 ease: [
                                                     0.22,
@@ -661,40 +525,82 @@ export default function DailyJourneyRecap({
                                                 ],
                                             }}
                                             className="
-                h-full
-                rounded-full
-                bg-gradient-to-r
-                from-cyan-400
-                to-violet-500
-            "
-                                        />
-                                        </div>
-                                        <div
-                                            className="
-                                                mt-3
-                                                flex
-                                                items-center
-                                                justify-between
-                                                text-[10px]
-                                                uppercase
-                                                tracking-wide
-                                                text-slate-600
+                                                h-full
+                                                rounded-full
+                                                bg-gradient-to-r
+                                                from-cyan-400
+                                                via-violet-400
+                                                to-fuchsia-400
                                             "
-                                        >
-                                            <span>
-                                                Comfort zone
-                                            </span>
-
-                                            <span>
-                                                Explore everything
-                                            </span>
-                                        </div>
+                                        />
                                     </div>
                                 </div>
 
+                                {/* Blind only if relevant */}
+
+                                {recap.blindExplored >
+                                    0 && (
+                                        <div
+                                            className="
+                                            mt-3
+                                            flex
+                                            items-center
+                                            justify-between
+                                            rounded-[18px]
+                                            border
+                                            border-white/[0.05]
+                                            bg-white/[0.015]
+                                            px-5
+                                            py-3
+                                        "
+                                        >
+                                            <div
+                                                className="
+                                                flex
+                                                items-center
+                                                gap-3
+                                            "
+                                            >
+                                                <FiEyeOff
+                                                    className="
+                                                    text-violet-300/70
+                                                "
+                                                />
+
+                                                <span
+                                                    className="
+                                                    text-xs
+                                                    text-slate-500
+                                                "
+                                                >
+                                                Heard blind
+                                            </span>
+                                            </div>
+
+                                            <span
+                                                className="
+                                                text-xs
+                                                font-medium
+                                                text-slate-300
+                                            "
+                                            >
+                                            {
+                                                recap.blindExplored
+                                            }
+                                                {" · "}
+                                                {
+                                                    recap.blindLiked
+                                                }{" "}
+                                                liked
+                                        </span>
+                                        </div>
+                                    )}
+
+                                {/* Actions */}
+
                                 <div
                                     className="
-                                        mt-8
+                                        mt-7
                                         flex
                                         flex-col
                                         gap-3
@@ -705,93 +611,95 @@ export default function DailyJourneyRecap({
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            setSharePreviewOpen(true);
+                                            if (
+                                                onViewJourney
+                                            ) {
+                                                onViewJourney(
+                                                    recap,
+                                                );
+
+                                                return;
+                                            }
+
+                                            onClose();
                                         }}
                                         className="
+                                            group
                                             flex
                                             items-center
                                             justify-center
                                             gap-2
                                             rounded-full
                                             border
-                                            border-violet-400/20
-                                            bg-violet-400/[0.08]
-                                            px-6
+                                            border-violet-300/[0.18]
+                                            bg-violet-300/[0.09]
+                                            px-7
                                             py-3
                                             text-sm
                                             font-medium
-                                            text-violet-200
+                                            text-violet-100
                                             transition
-                                            hover:border-violet-400/35
-                                            hover:bg-violet-400/[0.13]
+                                            hover:border-violet-300/[0.30]
+                                            hover:bg-violet-300/[0.14]
                                         "
                                     >
-                                        <FiShare2 />
-                                        Share Journey
+                                        View Journey
+
+                                        <FiArrowRight
+                                            className="
+                                                transition-transform
+                                                duration-300
+                                                group-hover:translate-x-1
+                                            "
+                                        />
                                     </button>
 
                                     <button
                                         type="button"
-                                        onClick={onClose}
+                                        onClick={
+                                            onClose
+                                        }
                                         className="
-                                            flex
-                                            items-center
-                                            justify-center
-                                            gap-2
                                             rounded-full
                                             border
-                                            border-white/[0.08]
-                                            bg-white/[0.035]
+                                            border-white/[0.07]
+                                            bg-white/[0.025]
                                             px-6
                                             py-3
                                             text-sm
-                                            font-medium
-                                            text-slate-300
+                                            text-slate-400
                                             transition
-                                            hover:bg-white/[0.07]
+                                            hover:bg-white/[0.05]
                                             hover:text-white
                                         "
                                     >
                                         Keep exploring
-                                        <FiArrowRight />
                                     </button>
                                 </div>
-                            </>
+                            </div>
                         )}
                     </motion.section>
                 </motion.div>
             )}
         </AnimatePresence>
-            <JourneySharePreview
-                open={sharePreviewOpen}
-                recap={recap}
-                onClose={() => {
-                    setSharePreviewOpen(false);
-                }}
-            />
-        </>
     );
 }
 
-type StatProps = {
+type CompactStatProps = {
     value: string | number;
     label: string;
-    icon?: ReactNode;
+    icon?: React.ReactNode;
 };
 
-function Stat({
-                  value,
-                  label,
-                  icon,
-              }: StatProps) {
+function CompactStat({
+                         value,
+                         label,
+                         icon,
+                     }: CompactStatProps) {
     return (
         <div
             className="
-                rounded-[20px]
-                border
-                border-white/[0.06]
-                bg-white/[0.025]
-                p-4
+                px-3
                 text-center
             "
         >
@@ -801,7 +709,7 @@ function Stat({
                     items-center
                     justify-center
                     gap-2
-                    text-2xl
+                    text-xl
                     font-semibold
                     text-white
                 "
@@ -818,8 +726,7 @@ function Stat({
             <p
                 className="
                     mt-1
-                    text-[10px]
-                    font-medium
+                    text-[9px]
                     uppercase
                     tracking-[0.16em]
                     text-slate-600

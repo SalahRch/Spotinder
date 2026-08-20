@@ -1,5 +1,7 @@
 package com.spotinder.backend.discovery.dto;
 
+import com.spotinder.backend.common.enums.SwipeDirection;
+
 public record JourneyTrackResponse(
 
         String spotifyTrackId,
@@ -8,7 +10,13 @@ public record JourneyTrackResponse(
 
         String artist,
 
-        String albumImage
+        String albumImage,
+
+        SwipeDirection direction,
+
+        boolean blindMode,
+
+        Integer adventureLevel
 
 ) {
 }

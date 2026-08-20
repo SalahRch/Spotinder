@@ -4,6 +4,10 @@ export type Recommendation = {
     artist: string;
     albumImage: string;
 };
+export type SwipeDirection =
+    | "LEFT"
+    | "RIGHT";
+
 export type DailyDiscovery = {
     id: string;
     date: string;
@@ -13,11 +17,15 @@ export type DailyDiscovery = {
     completed: boolean;
     completedAt: string | null;
 };
+
 export type JourneyTrack = {
     spotifyTrackId: string;
     title: string;
     artist: string;
     albumImage: string | null;
+    direction: SwipeDirection;
+    blindMode: boolean;
+    adventureLevel: number;
 };
 
 export type DailyDiscoveryRecap = {

@@ -19,6 +19,7 @@ import JourneysPage from "@/features/Journeys/JourneysPage";
 
 import OnboardingPage
     from "@/features/onboarding/pages/OnboardingPage";
+import JourneyDetailPage from "@/features/discovery/components/JourneyDetailPage.tsx";
 
 export const router =
     createBrowserRouter([
@@ -90,6 +91,10 @@ export const router =
                                         "journeys",
                                     element:
                                         <JourneysPage />,
+                                },
+                                {
+                                    path: "journeys/:journeyId",
+                                    element: <JourneyDetailPage />,
                                 },
                                 {
                                     path:

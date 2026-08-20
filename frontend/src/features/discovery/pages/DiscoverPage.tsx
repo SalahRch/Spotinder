@@ -30,6 +30,7 @@ import {useDailyDiscoveryRecap} from "@/features/discovery/hooks/useDailyDiscove
 import DailyJourneyRecap from "@/features/discovery/components/DailyJourneyRecap.tsx";
 import { useAchievementQueue } from "@/features/achievements/hooks/useAchievementQueue";
 import AchievementUnlockToast from "@/features/achievements/components/AchievementUnlockToast.tsx";
+import {useNavigate} from "react-router-dom";
 
 
 const greetingTransition = {
@@ -245,6 +246,9 @@ export default function DiscoverPage() {
         addAchievements,
         dismissCurrent,
     } = useAchievementQueue();
+
+    const navigate =
+        useNavigate();
 
     const recordSwipe =
         useRecordSwipe({
@@ -1547,6 +1551,13 @@ xl:h-full
                 loading={dailyRecapLoading}
                 onClose={() => {
                     setRecapOpen(false);
+                }}
+                onViewJourney={(recap) => {
+                    setRecapOpen(false);
+
+                    navigate(
+                        `/app/journeys/${recap.id}`,
+                    );
                 }}
             />)}
             <AchievementUnlockToast

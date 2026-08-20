@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class DailyDiscoveryService {
@@ -67,43 +70,59 @@ public class DailyDiscoveryService {
 
         List<Swipe> swipes =
                 swipeRepository
-                        .findByDiscoverySessionId(
+                        .findByDiscoverySessionIdOrderByCreatedAtAsc(
                                 session.getId()
                         );
 
-        System.out.println(
-                "Journey swipes count: " +
-                        swipes.size()
-        );
+        if (swipes.isEmpty()) {
+            return List.of();
+        }
 
         List<String> trackIds =
                 swipes.stream()
-                        .map(Swipe::getSpotifyTrackId)
+                        .map(
+                                Swipe::getSpotifyTrackId
+                        )
                         .toList();
-
-        System.out.println(
-                "Journey track ids: " +
-                        trackIds.size()
-        );
 
         List<SpotifyTrackResponse> spotifyTracks =
                 spotifyService.getTracksByIds(
                         trackIds
                 );
 
-        System.out.println(
-                "Spotify resolved tracks: " +
-                        spotifyTracks.size()
-        );
+        Map<String, SpotifyTrackResponse> tracksById =
+                spotifyTracks.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        SpotifyTrackResponse::id,
+                                        track -> track
+                                )
+                        );
 
-        return spotifyTracks.stream()
-                .map(track ->
-                        new JourneyTrackResponse(
-                                track.id(),
-                                track.title(),
-                                track.artist(),
-                                track.albumImage()
-                        )
+        return swipes.stream()
+                .map(swipe -> {
+
+                    SpotifyTrackResponse track =
+                            tracksById.get(
+                                    swipe.getSpotifyTrackId()
+                            );
+
+                    if (track == null) {
+                        return null;
+                    }
+
+                    return new JourneyTrackResponse(
+                            track.id(),
+                            track.title(),
+                            track.artist(),
+                            track.albumImage(),
+                            swipe.getDirection(),
+                            swipe.isBlindMode(),
+                            swipe.getAdventureLevel()
+                    );
+                })
+                .filter(
+                        Objects::nonNull
                 )
                 .toList();
     }
