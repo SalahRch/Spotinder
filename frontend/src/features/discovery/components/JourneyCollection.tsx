@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
     FiArrowRight,
 } from "react-icons/fi";
@@ -10,15 +9,10 @@ import {
     useJourneys,
 } from "../hooks/useJourneys";
 
-import {
-    useJourney,
-} from "../hooks/useJourney";
 
 import LatestJourneyCard
     from "./LatestJourneyCard";
 
-import DailyJourneyRecap
-    from "./DailyJourneyRecap";
 
 export default function JourneyCollection() {
     const navigate =
@@ -30,21 +24,6 @@ export default function JourneyCollection() {
         isError,
     } = useJourneys();
 
-    const [
-        selectedJourneyId,
-        setSelectedJourneyId,
-    ] = useState<string | null>(
-        null,
-    );
-
-    const {
-        data: selectedJourney,
-        isLoading:
-            isJourneyLoading,
-    } = useJourney(
-        selectedJourneyId ??
-        undefined,
-    );
 
     if (isLoading) {
         return (
@@ -133,30 +112,12 @@ export default function JourneyCollection() {
                         latestJourney
                     }
                     onClick={() => {
-                        setSelectedJourneyId(
-                            latestJourney.id,
+                        navigate(
+                            `/app/journeys/${latestJourney.id}`,
                         );
                     }}
                 />
             </div>
-
-            <DailyJourneyRecap
-                open={
-                    selectedJourneyId !==
-                    null
-                }
-                recap={
-                    selectedJourney
-                }
-                loading={
-                    isJourneyLoading
-                }
-                onClose={() => {
-                    setSelectedJourneyId(
-                        null,
-                    );
-                }}
-            />
         </section>
     );
 }

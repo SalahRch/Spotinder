@@ -8,19 +8,15 @@ import {
     useJourneys,
 } from "@/features/discovery/hooks/useJourneys";
 
-import {
-    useJourney,
-} from "@/features/discovery/hooks/useJourney";
 
 import JourneyCollectionCard
     from "@/features/discovery/components/JourneyCollectionCard";
 
-import DailyJourneyRecap
-    from "@/features/discovery/components/DailyJourneyRecap";
 
 import type {
     JourneySummary,
 } from "@/features/discovery/types/discovery";
+import {useNavigate} from "react-router-dom";
 
 
 type DateFilter =
@@ -47,12 +43,9 @@ export default function JourneysPage() {
         isError,
     } = useJourneys();
 
-    const [
-        selectedJourneyId,
-        setSelectedJourneyId,
-    ] = useState<string | null>(
-        null,
-    );
+    const navigate =
+        useNavigate();
+
 
     const [
         personaFilter,
@@ -75,14 +68,6 @@ export default function JourneysPage() {
         "NEWEST",
     );
 
-
-    const {
-        data: selectedJourney,
-        isLoading: isJourneyLoading,
-    } = useJourney(
-        selectedJourneyId ??
-        undefined,
-    );
 
     const filteredJourneys =
         useMemo(() => {
@@ -582,11 +567,11 @@ export default function JourneysPage() {
                                     journey={
                                         journey
                                     }
-                                    onClick={() =>
-                                        setSelectedJourneyId(
-                                            journey.id,
-                                        )
-                                    }
+                                    onClick={() => {
+                                        navigate(
+                                            `/app/journeys/${journey.id}`,
+                                        );
+                                    }}
                                 />
                             ),
                         )}
@@ -637,23 +622,6 @@ export default function JourneysPage() {
             </div>
 
 
-            {/* Journey detail */}
-
-            <DailyJourneyRecap
-                open={
-                    selectedJourneyId !==
-                    null
-                }
-                recap={selectedJourney}
-                loading={
-                    isJourneyLoading
-                }
-                onClose={() =>
-                    setSelectedJourneyId(
-                        null,
-                    )
-                }
-            />
         </section>
     );
 }

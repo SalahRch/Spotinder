@@ -10,7 +10,9 @@ type HSL = {
     l: number;
 };
 
-function parseRgb(color: string): RGB | null {
+function parseRgb(
+    color: string,
+): RGB | null {
     const match = color.match(
         /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/,
     );
@@ -20,9 +22,15 @@ function parseRgb(color: string): RGB | null {
     }
 
     return {
-        r: Number(match[1]),
-        g: Number(match[2]),
-        b: Number(match[3]),
+        r: Number(
+            match[1],
+        ),
+        g: Number(
+            match[2],
+        ),
+        b: Number(
+            match[3],
+        ),
     };
 }
 
@@ -31,9 +39,14 @@ function rgbToHsl({
                       g,
                       b,
                   }: RGB): HSL {
-    const red = r / 255;
-    const green = g / 255;
-    const blue = b / 255;
+    const red =
+        r / 255;
+
+    const green =
+        g / 255;
+
+    const blue =
+        b / 255;
 
     const max =
         Math.max(
@@ -61,7 +74,9 @@ function rgbToHsl({
                 (((green - blue) /
                         delta) %
                     6);
-        } else if (max === green) {
+        } else if (
+            max === green
+        ) {
             hue =
                 60 *
                 ((blue - red) /
@@ -89,14 +104,19 @@ function rgbToHsl({
             : delta /
             (1 -
                 Math.abs(
-                    2 * lightness -
+                    2 *
+                    lightness -
                     1,
                 ));
 
     return {
         h: hue,
-        s: saturation * 100,
-        l: lightness * 100,
+        s:
+            saturation *
+            100,
+        l:
+            lightness *
+            100,
     };
 }
 
@@ -105,7 +125,9 @@ function hueDistance(
     b: number,
 ) {
     const difference =
-        Math.abs(a - b);
+        Math.abs(
+            a - b,
+        );
 
     return Math.min(
         difference,
@@ -113,67 +135,124 @@ function hueDistance(
     );
 }
 
+/*
+ * Keep the album hue, but make it more
+ * useful as a soft background aura.
+ */
+function boostAuraColor(
+    hsl: HSL,
+): string {
+    const saturation =
+        Math.min(
+            82,
+            Math.max(
+                52,
+                hsl.s * 1.12,
+            ),
+        );
+
+    const lightness =
+        Math.min(
+            64,
+            Math.max(
+                42,
+                hsl.l +
+                12,
+            ),
+        );
+
+    return `hsl(${Math.round(
+        hsl.h,
+    )} ${Math.round(
+        saturation,
+    )}% ${Math.round(
+        lightness,
+    )}%)`;
+}
+
 export function pickJourneyAuraColors(
     colors: string[],
 ): [string, string] {
     const candidates =
         colors
-            .map((color) => {
-                const rgb =
-                    parseRgb(color);
-
-                if (!rgb) {
-                    return null;
-                }
-
-                const hsl =
-                    rgbToHsl(rgb);
-
-                /*
-                 * Ignore colors that are:
-                 * - extremely dark
-                 * - extremely bright
-                 * - almost gray
-                 */
-                if (
-                    hsl.l < 18 ||
-                    hsl.l > 88 ||
-                    hsl.s < 22
-                ) {
-                    return null;
-                }
-
-                /*
-                 * Prefer saturation, but keep
-                 * some brightness in the score.
-                 */
-                const score =
-                    hsl.s * 0.75 +
-                    hsl.l * 0.25;
-
-                return {
+            .map(
+                (
                     color,
-                    hsl,
-                    score,
-                };
-            })
+                ) => {
+                    const rgb =
+                        parseRgb(
+                            color,
+                        );
+
+                    if (!rgb) {
+                        return null;
+                    }
+
+                    const hsl =
+                        rgbToHsl(
+                            rgb,
+                        );
+
+                    /*
+                     * Ignore colors that are:
+                     * - extremely dark
+                     * - extremely bright
+                     * - almost gray
+                     */
+                    if (
+                        hsl.l <
+                        18 ||
+                        hsl.l >
+                        88 ||
+                        hsl.s <
+                        22
+                    ) {
+                        return null;
+                    }
+
+                    /*
+                     * Prefer saturation,
+                     * but keep some brightness
+                     * in the score.
+                     */
+                    const score =
+                        hsl.s *
+                        0.75 +
+                        hsl.l *
+                        0.25;
+
+                    return {
+                        color,
+                        hsl,
+                        score,
+                    };
+                },
+            )
             .filter(
                 (
                     value,
                 ): value is NonNullable<
                     typeof value
-                > => value !== null,
+                > =>
+                    value !==
+                    null,
             )
             .sort(
-                (a, b) =>
+                (
+                    a,
+                    b,
+                ) =>
                     b.score -
                     a.score,
             );
 
-    if (candidates.length === 0) {
+    if (
+        candidates.length ===
+        0
+    ) {
         return [
-            "rgb(139, 92, 246)",
-            "rgb(34, 211, 238)",
+            "hsl(262 70% 58%)",
+            "hsl(188 72% 52%)",
         ];
     }
 
@@ -186,17 +265,25 @@ export function pickJourneyAuraColors(
      */
     const secondary =
         candidates.find(
-            (candidate) =>
+            (
+                candidate,
+            ) =>
                 hueDistance(
-                    candidate.hsl.h,
-                    primary.hsl.h,
+                    candidate
+                        .hsl.h,
+                    primary
+                        .hsl.h,
                 ) >= 55,
         ) ??
         candidates[1] ??
         primary;
 
     return [
-        primary.color,
-        secondary.color,
+        boostAuraColor(
+            primary.hsl,
+        ),
+        boostAuraColor(
+            secondary.hsl,
+        ),
     ];
 }

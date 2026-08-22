@@ -12,6 +12,7 @@ import {
 
 import JourneyShareArtwork
     from "./JourneyShareArtwork";
+import {forwardRef} from "react";
 
 type JourneyShareCardProps = {
     recap: DailyDiscoveryRecap;
@@ -31,25 +32,68 @@ function formatPersona(
         );
 }
 
-export default function JourneyShareCard({
-                                             recap,
-                                         }: JourneyShareCardProps) {
+const JourneyShareCard =
+    forwardRef<
+        HTMLDivElement,
+        JourneyShareCardProps
+    >(
+        (
+            {
+                recap,
+            },
+            ref,
+        ) => {
     const albumColors =
         useJourneyAlbumColors(
             recap.tracks ?? [],
         );
 
+    const likedTracks =
+        recap.tracks.filter(
+            (track) =>
+                track.direction ===
+                "RIGHT",
+        );
+
+    const posterTracks =
+        [
+            ...likedTracks,
+            ...recap.tracks.filter(
+                (track) =>
+                    track.direction !==
+                    "RIGHT",
+            ),
+        ].slice(
+            0,
+            3,
+        );
+
+    const posterColors =
+        posterTracks
+            .map(
+                (track) =>
+                    albumColors[
+                        track.spotifyTrackId
+                        ],
+            )
+            .filter(
+                (
+                    color,
+                ): color is string =>
+                    Boolean(color),
+            );
+
     const [
         primaryAura,
         secondaryAura,
     ] = pickJourneyAuraColors(
-        Object.values(
-            albumColors,
-        ),
+        posterColors,
     );
+
 
     return (
         <div
+            ref={ref}
             className="
                 relative
                 aspect-[4/5]
@@ -450,7 +494,11 @@ export default function JourneyShareCard({
             </div>
         </div>
     );
-}
+});
+
+JourneyShareCard.displayName= "JourneyShareCard";
+
+export default JourneyShareCard;
 
 type PosterStatProps = {
     value: string | number;
