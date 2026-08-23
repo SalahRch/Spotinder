@@ -3,21 +3,26 @@ import {
     useState,
 } from "react";
 
+import {
+    useNavigate,
+} from "react-router-dom";
 
 import {
     useJourneys,
 } from "@/features/discovery/hooks/useJourneys";
 
-
 import JourneyCollectionCard
     from "@/features/discovery/components/JourneyCollectionCard";
 
+import JourneyEmptyState
+    from "@/features/discovery/components/JourneyEmptyState";
+
+import JourneyArchiveEmptyState
+    from "@/features/discovery/components/JourneyArchiveEmptyState";
 
 import type {
     JourneySummary,
 } from "@/features/discovery/types/discovery";
-import {useNavigate} from "react-router-dom";
-
 
 type DateFilter =
     | "ALL"
@@ -35,7 +40,6 @@ type PersonaFilter =
     | "ALL"
     | JourneySummary["discoveryPersona"];
 
-
 export default function JourneysPage() {
     const {
         data: journeys = [],
@@ -45,7 +49,6 @@ export default function JourneysPage() {
 
     const navigate =
         useNavigate();
-
 
     const [
         personaFilter,
@@ -68,10 +71,8 @@ export default function JourneysPage() {
         "NEWEST",
     );
 
-
     const filteredJourneys =
         useMemo(() => {
-
             const now =
                 new Date();
 
@@ -158,8 +159,13 @@ export default function JourneysPage() {
                     },
                 );
 
-            return [...result].sort(
-                (a, b) => {
+            return [
+                ...result,
+            ].sort(
+                (
+                    a,
+                    b,
+                ) => {
                     switch (
                         sortOption
                         ) {
@@ -205,7 +211,6 @@ export default function JourneysPage() {
             sortOption,
         ]);
 
-
     if (isLoading) {
         return (
             <div
@@ -237,6 +242,9 @@ export default function JourneysPage() {
         );
     }
 
+    const hasJourneys =
+        journeys.length > 0;
+
     return (
         <section
             className="
@@ -247,7 +255,7 @@ export default function JourneysPage() {
                 text-white
             "
         >
-            {/* Background atmosphere */}
+            {/* ================= BACKGROUND ================= */}
 
             <div
                 aria-hidden="true"
@@ -292,7 +300,7 @@ export default function JourneysPage() {
                     lg:py-12
                 "
             >
-                {/* Header */}
+                {/* ================= HEADER ================= */}
 
                 <div
                     className="
@@ -359,7 +367,9 @@ export default function JourneysPage() {
                                 text-white
                             "
                         >
-                            {journeys.length}
+                            {
+                                journeys.length
+                            }
                         </p>
 
                         <p
@@ -376,260 +386,271 @@ export default function JourneysPage() {
                     </div>
                 </div>
 
+                {/* =====================================================
+                    ARCHIVE EXISTS
+                   ===================================================== */}
 
-                {/* Controls */}
+                {hasJourneys ? (
+                    <>
+                        {/* ================= CONTROLS ================= */}
 
-                {/* Controls */}
-
-                <div
-                    className="
-        mt-10
-        flex
-        flex-col
-        gap-4
-        border-y
-        border-white/[0.06]
-        py-5
-        xl:flex-row
-        xl:items-center
-        xl:justify-between
-    "
-                >
-                    {/* Persona filters */}
-
-                    <div
-                        className="
-            flex
-            flex-wrap
-            gap-2
-        "
-                    >
-                        <FilterButton
-                            active={
-                                personaFilter ===
-                                "ALL"
-                            }
-                            onClick={() =>
-                                setPersonaFilter(
-                                    "ALL",
-                                )
-                            }
+                        <div
+                            className="
+                                mt-10
+                                flex
+                                flex-col
+                                gap-4
+                                border-y
+                                border-white/[0.06]
+                                py-5
+                                xl:flex-row
+                                xl:items-center
+                                xl:justify-between
+                            "
                         >
-                            All
-                        </FilterButton>
+                            {/* persona filters */}
 
-                        {[
-                            "EXPLORER",
-                            "ROMANTIC",
-                            "PURIST",
-                            "CURATOR",
-                            "WANDERER",
-                            "WILDCARD",
-                        ].map(
-                            (persona) => (
+                            <div
+                                className="
+                                    flex
+                                    flex-wrap
+                                    gap-2
+                                "
+                            >
                                 <FilterButton
-                                    key={persona}
                                     active={
                                         personaFilter ===
-                                        persona
+                                        "ALL"
                                     }
                                     onClick={() =>
                                         setPersonaFilter(
-                                            persona as PersonaFilter,
+                                            "ALL",
                                         )
                                     }
                                 >
-                                    {formatPersona(
-                                        persona,
-                                    )}
+                                    All
                                 </FilterButton>
-                            ),
-                        )}
-                    </div>
 
-                    {/* Archive controls */}
+                                {[
+                                    "EXPLORER",
+                                    "ROMANTIC",
+                                    "PURIST",
+                                    "CURATOR",
+                                    "WANDERER",
+                                    "WILDCARD",
+                                ].map(
+                                    (
+                                        persona,
+                                    ) => (
+                                        <FilterButton
+                                            key={
+                                                persona
+                                            }
+                                            active={
+                                                personaFilter ===
+                                                persona
+                                            }
+                                            onClick={() =>
+                                                setPersonaFilter(
+                                                    persona as PersonaFilter,
+                                                )
+                                            }
+                                        >
+                                            {formatPersona(
+                                                persona,
+                                            )}
+                                        </FilterButton>
+                                    ),
+                                )}
+                            </div>
 
-                    <div
-                        className="
-            flex
-            shrink-0
-            flex-wrap
-            gap-3
-        "
-                    >
-                        <select
-                            value={dateFilter}
-                            onChange={(event) =>
-                                setDateFilter(
-                                    event.target
-                                        .value as DateFilter,
-                                )
-                            }
-                            className="
-                rounded-full
-                border
-                border-white/[0.07]
-                bg-[#111722]
-                px-4
-                py-2.5
-                text-[10px]
-                font-medium
-                uppercase
-                tracking-[0.14em]
-                text-slate-300
-                outline-none
-                transition
-                hover:border-white/[0.12]
-            "
-                        >
-                            <option value="ALL">
-                                Any date
-                            </option>
+                            {/* archive controls */}
 
-                            <option value="TODAY">
-                                Today
-                            </option>
-
-                            <option value="THIS_WEEK">
-                                This week
-                            </option>
-
-                            <option value="THIS_MONTH">
-                                This month
-                            </option>
-                        </select>
-
-                        <select
-                            value={sortOption}
-                            onChange={(event) =>
-                                setSortOption(
-                                    event.target
-                                        .value as SortOption,
-                                )
-                            }
-                            className="
-                rounded-full
-                border
-                border-white/[0.07]
-                bg-[#111722]
-                px-4
-                py-2.5
-                text-[10px]
-                font-medium
-                uppercase
-                tracking-[0.14em]
-                text-slate-300
-                outline-none
-                transition
-                hover:border-white/[0.12]
-            "
-                        >
-                            <option value="NEWEST">
-                                Newest first
-                            </option>
-
-                            <option value="OLDEST">
-                                Oldest first
-                            </option>
-
-                            <option value="ADVENTURE_HIGH">
-                                Highest adventure
-                            </option>
-
-                            <option value="HIT_RATE_HIGH">
-                                Highest hit rate
-                            </option>
-                        </select>
-                    </div>
-                </div>
-
-
-
-                {/* Archive */}
-
-                {filteredJourneys.length >
-                0 ? (
-                    <div
-                        className="
-                            mt-8
-                            grid
-                            gap-5
-                            md:grid-cols-2
-                            xl:grid-cols-3
-                        "
-                    >
-                        {filteredJourneys.map(
-                            (journey) => (
-                                <JourneyCollectionCard
-                                    key={
-                                        journey.id
+                            <div
+                                className="
+                                    flex
+                                    shrink-0
+                                    flex-wrap
+                                    gap-3
+                                "
+                            >
+                                <select
+                                    value={
+                                        dateFilter
                                     }
-                                    journey={
-                                        journey
+                                    onChange={(
+                                        event,
+                                    ) =>
+                                        setDateFilter(
+                                            event
+                                                .target
+                                                .value as DateFilter,
+                                        )
                                     }
-                                    onClick={() => {
-                                        navigate(
-                                            `/app/journeys/${journey.id}`,
-                                        );
-                                    }}
-                                />
-                            ),
+                                    className="
+                                        rounded-full
+                                        border
+                                        border-white/[0.07]
+                                        bg-[#111722]
+                                        px-4
+                                        py-2.5
+                                        text-[10px]
+                                        font-medium
+                                        uppercase
+                                        tracking-[0.14em]
+                                        text-slate-300
+                                        outline-none
+                                        transition
+                                        hover:border-white/[0.12]
+                                    "
+                                >
+                                    <option value="ALL">
+                                        Any date
+                                    </option>
+
+                                    <option value="TODAY">
+                                        Today
+                                    </option>
+
+                                    <option value="THIS_WEEK">
+                                        This week
+                                    </option>
+
+                                    <option value="THIS_MONTH">
+                                        This month
+                                    </option>
+                                </select>
+
+                                <select
+                                    value={
+                                        sortOption
+                                    }
+                                    onChange={(
+                                        event,
+                                    ) =>
+                                        setSortOption(
+                                            event
+                                                .target
+                                                .value as SortOption,
+                                        )
+                                    }
+                                    className="
+                                        rounded-full
+                                        border
+                                        border-white/[0.07]
+                                        bg-[#111722]
+                                        px-4
+                                        py-2.5
+                                        text-[10px]
+                                        font-medium
+                                        uppercase
+                                        tracking-[0.14em]
+                                        text-slate-300
+                                        outline-none
+                                        transition
+                                        hover:border-white/[0.12]
+                                    "
+                                >
+                                    <option value="NEWEST">
+                                        Newest first
+                                    </option>
+
+                                    <option value="OLDEST">
+                                        Oldest first
+                                    </option>
+
+                                    <option value="ADVENTURE_HIGH">
+                                        Highest adventure
+                                    </option>
+
+                                    <option value="HIT_RATE_HIGH">
+                                        Highest hit rate
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* ================= ARCHIVE ================= */}
+
+                        {filteredJourneys.length >
+                        0 ? (
+                            <div
+                                className="
+                                    mt-8
+                                    grid
+                                    gap-5
+                                    md:grid-cols-2
+                                    xl:grid-cols-3
+                                "
+                            >
+                                {filteredJourneys.map(
+                                    (
+                                        journey,
+                                    ) => (
+                                        <JourneyCollectionCard
+                                            key={
+                                                journey.id
+                                            }
+                                            journey={
+                                                journey
+                                            }
+                                            onClick={() => {
+                                                navigate(
+                                                    `/app/journeys/${journey.id}`,
+                                                );
+                                            }}
+                                        />
+                                    ),
+                                )}
+                            </div>
+                        ) : (
+                            <JourneyEmptyState
+                                persona={
+                                    personaFilter ===
+                                    "ALL"
+                                        ? undefined
+                                        : personaFilter
+                                }
+                                onClear={() => {
+                                    setPersonaFilter(
+                                        "ALL",
+                                    );
+
+                                    setDateFilter(
+                                        "ALL",
+                                    );
+
+                                    setSortOption(
+                                        "NEWEST",
+                                    );
+                                }}
+                            />
                         )}
-                    </div>
+                    </>
                 ) : (
-                    <div
-                        className="
-                            mt-16
-                            text-center
-                        "
-                    >
-                        <p
-                            className="
-                                text-sm
-                                text-slate-500
-                            "
-                        >
-                            No journeys match
-                            those filters.
-                        </p>
-
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setPersonaFilter(
-                                    "ALL",
-                                );
-                                setDateFilter(
-                                    "ALL",
-                                );
-                                setSortOption(
-                                    "NEWEST",
-                                );
-                            }}
-                            className="
-                                mt-3
-                                text-xs
-                                font-medium
-                                text-violet-300
-                                transition
-                                hover:text-violet-200
-                            "
-                        >
-                            Clear filters
-                        </button>
-                    </div>
+                    /*
+                     * No completed journeys at all.
+                     * Filters are intentionally hidden.
+                     */
+                    <JourneyArchiveEmptyState
+                        onDiscover={() => {
+                            navigate(
+                                "/app/discover",
+                            );
+                        }}
+                    />
                 )}
             </div>
-
-
         </section>
     );
 }
 
-
 type FilterButtonProps = {
-    children: React.ReactNode;
+    children:
+        React.ReactNode;
+
     active: boolean;
+
     onClick: () => void;
 };
 
@@ -675,14 +696,18 @@ function FilterButton({
     );
 }
 
-
 function formatPersona(
     persona: string,
 ) {
     return persona
         .toLowerCase()
-        .replaceAll("_", " ")
-        .replace(/\b\w/g, (letter) =>
-            letter.toUpperCase(),
+        .replaceAll(
+            "_",
+            " ",
+        )
+        .replace(
+            /\b\w/g,
+            (letter) =>
+                letter.toUpperCase(),
         );
 }

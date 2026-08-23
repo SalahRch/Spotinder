@@ -3,16 +3,19 @@ import {
     useState,
 } from "react";
 
-import type {
-    JourneyTrack,
-} from "../types/discovery";
 
 import {
     extractAlbumColor,
 } from "../utils/extractAlbumColor";
 
+
+type AlbumColorTrack = {
+    spotifyTrackId: string;
+    albumImage: string | null;
+};
+
 export function useJourneyAlbumColors(
-    tracks: JourneyTrack[],
+    tracks: AlbumColorTrack[],
 ) {
     const [
         colors,
