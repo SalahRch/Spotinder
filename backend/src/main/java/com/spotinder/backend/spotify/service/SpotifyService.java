@@ -55,6 +55,9 @@ public class SpotifyService {
                         track.id(),
                         track.name(),
                         track.artists().isEmpty()
+                                ? null
+                                : track.artists().get(0).id(),
+                        track.artists().isEmpty()
                                 ? "Unknown Artist"
                                 : track.artists().get(0).name(),
                         track.album().images().isEmpty()
@@ -91,6 +94,9 @@ public class SpotifyService {
 
                             track.id(),
                             track.name(),
+                            track.artists().isEmpty()
+                                    ? null
+                                    : track.artists().get(0).id(),
                             track.artists().isEmpty()
                                     ? "Unknown Artist"
                                     : track.artists().get(0).name(),
@@ -243,6 +249,9 @@ public class SpotifyService {
                                 track.id(),
                                 track.name(),
                                 track.artists().isEmpty()
+                                        ? null
+                                        : track.artists().get(0).id(),
+                                track.artists().isEmpty()
                                         ? "Unknown Artist"
                                         : track.artists()
                                         .get(0)
@@ -258,6 +267,228 @@ public class SpotifyService {
                 )
                 .toList();
     }
+
+    public List<SpotifyArtistResponse> getTopArtists() {
+
+        String accessToken =
+                spotifyTokenService.getAccessToken();
+
+        SpotifyTopArtistsResponse response =
+                restClient.get()
+                        .uri(
+                                "https://api.spotify.com/v1/me/top/artists?limit=20"
+                        )
+                        .header(
+                                "Authorization",
+                                "Bearer " + accessToken
+                        )
+                        .retrieve()
+                        .body(
+                                SpotifyTopArtistsResponse.class
+                        );
+
+        if (
+                response == null ||
+                        response.items() == null
+        ) {
+            return List.of();
+        }
+
+        return response.items()
+                .stream()
+                .map(
+                        artist ->
+                                new SpotifyArtistResponse(
+                                        artist.id(),
+                                        artist.name(),
+                                        artist.genres(),
+                                        artist.popularity()
+                                )
+                )
+                .toList();
+    }
+
+    public List<SpotifyTrack> searchTrackCandidates(
+            String query,
+            int limit
+    ) {
+        String accessToken =
+                spotifyTokenService.getAccessToken();
+
+        SpotifySearchResponse response =
+                restClient.get()
+                        .uri(uriBuilder ->
+                                uriBuilder
+                                        .scheme("https")
+                                        .host("api.spotify.com")
+                                        .path("/v1/search")
+                                        .queryParam(
+                                                "q",
+                                                query
+                                        )
+                                        .queryParam(
+                                                "type",
+                                                "track"
+                                        )
+                                        .queryParam(
+                                                "limit",
+                                                limit
+                                        )
+                                        .build()
+                        )
+                        .header(
+                                "Authorization",
+                                "Bearer " + accessToken
+                        )
+                        .retrieve()
+                        .body(
+                                SpotifySearchResponse.class
+                        );
+
+        if (
+                response == null ||
+                        response.tracks() == null ||
+                        response.tracks().items() == null
+        ) {
+            return List.of();
+        }
+
+        return response.tracks().items();
+    }
+
+    public List<SpotifyArtistResponse> getArtistsByIds(
+            List<String> artistIds
+    ) {
+
+        if (artistIds == null || artistIds.isEmpty()) {
+            return List.of();
+        }
+
+        String accessToken =
+                spotifyTokenService.getAccessToken();
+
+        String ids =
+                String.join(",", artistIds);
+
+        SpotifyArtistsResponse response =
+                restClient.get()
+                        .uri(
+                                "https://api.spotify.com/v1/artists?ids={ids}",
+                                ids
+                        )
+                        .header(
+                                "Authorization",
+                                "Bearer " + accessToken
+                        )
+                        .retrieve()
+                        .body(
+                                SpotifyArtistsResponse.class
+                        );
+
+        if (
+                response == null ||
+                        response.artists() == null
+        ) {
+            return List.of();
+        }
+
+        return response.artists()
+                .stream()
+                .filter(artist ->
+                        artist != null
+                )
+                .toList();
+    }
+
+
+    public List<SpotifyTrackResponse> searchTracks(
+            String query,
+            int limit
+    ) {
+        return searchTrackCandidates(
+                query,
+                limit
+        )
+                .stream()
+                .map(track ->
+                        new SpotifyTrackResponse(
+                                track.id(),
+                                track.name(),
+                                track.artists().isEmpty()
+                                        ? null
+                                        : track.artists().get(0).id(),
+                                track.artists().isEmpty()
+                                        ? "Unknown Artist"
+                                        : track.artists()
+                                        .get(0)
+                                        .name(),
+
+                                track.album() == null ||
+                                        track.album().images() == null ||
+                                        track.album().images().isEmpty()
+                                        ? null
+                                        : track.album()
+                                        .images()
+                                        .get(0)
+                                        .url(),
+
+                                track.previewUrl()
+                        )
+                )
+                .toList();
+    }
+
+    public List<SpotifyArtistResponse> searchArtists(
+            String query,
+            int limit
+    ) {
+        String accessToken =
+                spotifyTokenService.getAccessToken();
+
+        SpotifyArtistSearchResponse response =
+                restClient.get()
+                        .uri(uriBuilder ->
+                                uriBuilder
+                                        .scheme("https")
+                                        .host("api.spotify.com")
+                                        .path("/v1/search")
+                                        .queryParam("q", query)
+                                        .queryParam("type", "artist")
+                                        .queryParam("limit", limit)
+                                        .build()
+                        )
+                        .header(
+                                "Authorization",
+                                "Bearer " + accessToken
+                        )
+                        .retrieve()
+                        .body(
+                                SpotifyArtistSearchResponse.class
+                        );
+
+        if (
+                response == null ||
+                        response.artists() == null ||
+                        response.artists().items() == null
+        ) {
+            return List.of();
+        }
+
+        return response.artists()
+                .items()
+                .stream()
+                .map(artist ->
+                        new SpotifyArtistResponse(
+                                artist.id(),
+                                artist.name(),
+                                artist.genres(),
+                                artist.popularity()
+                        )
+                )
+                .toList();
+    }
+
+
 
 
 

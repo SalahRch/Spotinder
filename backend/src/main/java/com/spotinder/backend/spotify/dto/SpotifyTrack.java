@@ -7,10 +7,19 @@ import java.util.List;
 public record SpotifyTrack(
 
         String id,
+
         String name,
+
         List<SpotifyArtist> artists,
+
         SpotifyAlbum album,
+
         @JsonProperty("preview_url")
-        String previewUrl
+        String previewUrl,
+
+        @JsonProperty("duration_ms")
+        Integer durationMs,
+
+        Integer popularity
 
 ) {}

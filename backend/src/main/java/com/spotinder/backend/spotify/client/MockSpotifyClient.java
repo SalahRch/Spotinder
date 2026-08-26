@@ -16,6 +16,7 @@ public class MockSpotifyClient implements SpotifyClient {
                 new SpotifyTrackResponse(
                         "1",
                         "After Hours",
+                        "0",
                         "The Weeknd",
                         "https://i.scdn.co/image/...",
                         ""
@@ -24,6 +25,7 @@ public class MockSpotifyClient implements SpotifyClient {
                 new SpotifyTrackResponse(
                         "2",
                         "Nights",
+                        "0",
                         "Frank Ocean",
                         "https://i.scdn.co/image/...",
                         ""
@@ -32,6 +34,7 @@ public class MockSpotifyClient implements SpotifyClient {
                 new SpotifyTrackResponse(
                         "3",
                         "The Less I Know The Better",
+                        "0",
                         "Tame Impala",
                         "https://i.scdn.co/image/...",
                         ""

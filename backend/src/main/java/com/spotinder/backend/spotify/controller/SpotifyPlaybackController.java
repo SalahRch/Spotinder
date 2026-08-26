@@ -1,10 +1,12 @@
 package com.spotinder.backend.spotify.controller;
 
 import com.spotinder.backend.spotify.dto.PlayTrackRequest;
+import com.spotinder.backend.spotify.dto.SpotifyArtistResponse;
 import com.spotinder.backend.spotify.service.SpotifyService;
 import com.spotinder.backend.spotify.service.SpotifyTokenService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -40,6 +42,21 @@ public class SpotifyPlaybackController {
         spotifyService.playTrack(
                 request.deviceId(),
                 request.spotifyTrackId()
+        );
+    }
+
+    @GetMapping("/top-artists")
+    public List<SpotifyArtistResponse> getTopArtists() {
+        return spotifyService.getTopArtists();
+    }
+
+    @GetMapping("/search-artists")
+    public List<SpotifyArtistResponse> searchArtists(
+            @RequestParam String query
+    ) {
+        return spotifyService.searchArtists(
+                query,
+                10
         );
     }
 }
