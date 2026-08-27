@@ -3,7 +3,6 @@ package com.spotinder.backend.swipes.service;
 import com.spotinder.backend.achievements.dto.AchievementUnlockResponse;
 import com.spotinder.backend.achievements.service.AchievementService;
 import com.spotinder.backend.common.enums.SwipeDirection;
-import com.spotinder.backend.common.exception.ResourceNotFoundException;
 import com.spotinder.backend.common.service.CurrentUserService;
 import com.spotinder.backend.discovery.entity.DiscoverySession;
 import com.spotinder.backend.discovery.repository.DiscoverySessionRepository;
@@ -13,7 +12,6 @@ import com.spotinder.backend.swipes.dto.SwipeResponse;
 import com.spotinder.backend.swipes.entity.Swipe;
 import com.spotinder.backend.swipes.repository.SwipeRepository;
 import com.spotinder.backend.users.entity.User;
-import com.spotinder.backend.users.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -24,21 +22,46 @@ import java.util.Optional;
 @Service
 public class SwipeService {
 
-
     private final DiscoverySessionRepository
             discoverySessionRepository;
-    private final CurrentUserService currentUserService;
-    private final SwipeRepository swipeRepository;
-    private final DailyDiscoveryService dailyDiscoveryService;
-    private final AchievementService achievementService;
 
-    public SwipeService(DiscoverySessionRepository discoverySessionRepository, CurrentUserService currentUserService, SwipeRepository swipeRepository, DailyDiscoveryService dailyDiscoveryService, AchievementService achievementService) {
-        this.discoverySessionRepository = discoverySessionRepository;
-        this.currentUserService = currentUserService;
-        this.swipeRepository = swipeRepository;
-        this.dailyDiscoveryService = dailyDiscoveryService;
-        this.achievementService = achievementService;
+    private final CurrentUserService
+            currentUserService;
+
+    private final SwipeRepository
+            swipeRepository;
+
+    private final DailyDiscoveryService
+            dailyDiscoveryService;
+
+    private final AchievementService
+            achievementService;
+
+
+    public SwipeService(
+            DiscoverySessionRepository discoverySessionRepository,
+            CurrentUserService currentUserService,
+            SwipeRepository swipeRepository,
+            DailyDiscoveryService dailyDiscoveryService,
+            AchievementService achievementService
+    ) {
+
+        this.discoverySessionRepository =
+                discoverySessionRepository;
+
+        this.currentUserService =
+                currentUserService;
+
+        this.swipeRepository =
+                swipeRepository;
+
+        this.dailyDiscoveryService =
+                dailyDiscoveryService;
+
+        this.achievementService =
+                achievementService;
     }
+
 
     public SwipeResponse recordSwipe(
             SwipeRequest request
@@ -48,8 +71,15 @@ public class SwipeService {
                 currentUserService
                         .getCurrentUser();
 
+        /*
+         * Today's session remains available even
+         * after the daily journey has been completed.
+         *
+         * Completion is a milestone, not a hard
+         * discovery limit.
+         */
         DiscoverySession session =
-                getActiveTodaySession(
+                getTodaySession(
                         user
                 );
 
@@ -86,10 +116,15 @@ public class SwipeService {
         boolean journeyCompleted =
                 false;
 
-        if (
-                isNewSwipe &&
-                        session != null
-        ) {
+        /*
+         * Only genuinely new swipes count toward
+         * daily progress.
+         *
+         * Changing an old LIKE/PASS should not
+         * increment songsSeen again.
+         */
+        if (isNewSwipe) {
+
             journeyCompleted =
                     updateDailyProgress(
                             session,
@@ -117,6 +152,11 @@ public class SwipeService {
     }
 
 
+    /*
+     * ---------------------------------------------------------
+     * DAILY JOURNEY PROGRESS
+     * ---------------------------------------------------------
+     */
 
     private boolean updateDailyProgress(
             DiscoverySession session,
@@ -134,16 +174,32 @@ public class SwipeService {
                 direction ==
                         SwipeDirection.RIGHT
         ) {
+
             session.setSongsLiked(
                     session.getSongsLiked() + 1
             );
         }
 
-        if (
-                newSongsSeen >=
-                        session.getGoal()
-        ) {
-            session.setCompleted(true);
+        /*
+         * Completion should happen exactly once.
+         *
+         * Example:
+         *
+         * swipe 19 -> incomplete
+         * swipe 20 -> justCompleted = true
+         * swipe 21 -> completed already, keep counting
+         */
+        boolean justCompleted =
+                !session.isCompleted() &&
+                        newSongsSeen >=
+                                session.getGoal();
+
+        if (justCompleted) {
+
+            session.setCompleted(
+                    true
+            );
+
             session.setCompletedAt(
                     Instant.now()
             );
@@ -159,6 +215,10 @@ public class SwipeService {
             return true;
         }
 
+        /*
+         * Even after completion, songsSeen and
+         * songsLiked continue increasing.
+         */
         discoverySessionRepository.save(
                 session
         );
@@ -166,7 +226,14 @@ public class SwipeService {
         return false;
     }
 
-    private DiscoverySession getActiveTodaySession(
+
+    /*
+     * ---------------------------------------------------------
+     * TODAY'S DISCOVERY SESSION
+     * ---------------------------------------------------------
+     */
+
+    private DiscoverySession getTodaySession(
             User user
     ) {
 
@@ -180,16 +247,16 @@ public class SwipeService {
                                 today
                         );
 
+        /*
+         * IMPORTANT:
+         *
+         * A completed session is still today's
+         * active tracking session.
+         *
+         * We DO NOT return null after completion.
+         */
         if (existingSession.isPresent()) {
-
-            DiscoverySession session =
-                    existingSession.get();
-
-            if (session.isCompleted()) {
-                return null;
-            }
-
-            return session;
+            return existingSession.get();
         }
 
         DiscoverySession session =
@@ -204,13 +271,31 @@ public class SwipeService {
         );
 
         return discoverySessionRepository
-                .save(session);
+                .save(
+                        session
+                );
     }
 
-    private Swipe updateExistingSwipe(Swipe swipe, SwipeRequest request) {
 
-        swipe.setDirection(request.direction());
-        swipe.setBlindMode(request.blindMode());
+    /*
+     * ---------------------------------------------------------
+     * EXISTING SWIPE UPDATE
+     * ---------------------------------------------------------
+     */
+
+    private Swipe updateExistingSwipe(
+            Swipe swipe,
+            SwipeRequest request
+    ) {
+
+        swipe.setDirection(
+                request.direction()
+        );
+
+        swipe.setBlindMode(
+                request.blindMode()
+        );
+
         swipe.setAdventureLevel(
                 request.adventureLevel()
         );
@@ -218,17 +303,42 @@ public class SwipeService {
         return swipe;
     }
 
-    private Swipe createSwipe(User user, SwipeRequest request, DiscoverySession session) {
 
-        Swipe swipe = new Swipe();
+    /*
+     * ---------------------------------------------------------
+     * NEW SWIPE
+     * ---------------------------------------------------------
+     */
 
-        swipe.setUserId(user.getSpotifyId());
-        swipe.setSpotifyTrackId(request.spotifyTrackId());
-        swipe.setDirection(request.direction());
-        swipe.setBlindMode(request.blindMode());
+    private Swipe createSwipe(
+            User user,
+            SwipeRequest request,
+            DiscoverySession session
+    ) {
+
+        Swipe swipe =
+                new Swipe();
+
+        swipe.setUserId(
+                user.getSpotifyId()
+        );
+
+        swipe.setSpotifyTrackId(
+                request.spotifyTrackId()
+        );
+
+        swipe.setDirection(
+                request.direction()
+        );
+
+        swipe.setBlindMode(
+                request.blindMode()
+        );
+
         swipe.setAdventureLevel(
                 request.adventureLevel()
         );
+
         swipe.setDiscoverySession(
                 session
         );

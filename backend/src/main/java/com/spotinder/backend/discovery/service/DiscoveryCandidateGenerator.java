@@ -8,17 +8,21 @@ import com.spotinder.backend.spotify.dto.SpotifyTrack;
 import com.spotinder.backend.spotify.service.SpotifyService;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 public class DiscoveryCandidateGenerator {
 
-    private static final int TARGET_ADJACENT_ARTISTS =
-            12;
+    private static final int TARGET_ADJACENT_ARTISTS = 20;
+
+    private static final int ARTIST_SEARCH_PAGE_SIZE = 10;
+
+    private static final int MAX_ARTIST_SEARCH_PAGES = 3;
+
+    private static final int TRACK_SEARCH_PAGE_SIZE = 10;
+
+    private static final int MAX_TRACK_SEARCH_PAGES = 3;
 
     private static final Set<String> GENERIC_GENRES =
             Set.of(
@@ -121,6 +125,11 @@ public class DiscoveryCandidateGenerator {
         Map<String, DiscoveryCandidate> candidates =
                 new LinkedHashMap<>();
 
+        Set<String> trackIdentityKeys =
+                new HashSet<>();
+
+
+
         /*
          * Candidate generation creates the same
          * broad taste-relevant universe regardless
@@ -137,16 +146,15 @@ public class DiscoveryCandidateGenerator {
                 topArtists,
                 5,
                 2,
-                candidates
+                candidates,
+                trackIdentityKeys
         );
 
-        /*
-         * Novel but taste-connected artists.
-         */
         addAdjacentArtistCandidates(
                 adjacentArtists,
                 2,
-                candidates
+                candidates,
+                trackIdentityKeys
         );
 
         return List.copyOf(
@@ -154,11 +162,13 @@ public class DiscoveryCandidateGenerator {
         );
     }
 
+
     private void addArtistCandidates(
             List<SpotifyArtistResponse> artists,
             int artistCount,
             int tracksPerArtist,
-            Map<String, DiscoveryCandidate> candidates
+            Map<String, DiscoveryCandidate> candidates,
+            Set<String> trackIdentityKeys
     ) {
 
         artists.stream()
@@ -166,86 +176,121 @@ public class DiscoveryCandidateGenerator {
                 .forEach(artist -> {
 
                     List<SpotifyTrack> tracks =
-                            spotifyService.searchTrackCandidates(
-                                    "artist:" + artist.name(),
+                            findValidTracksForArtist(
+                                    artist,
                                     tracksPerArtist
                             );
 
-                    tracks.stream()
-
-                            .filter(track ->
-                                    track.artists() != null &&
-                                            !track.artists().isEmpty()
+                    tracks.forEach(track ->
+                            addCandidateIfAbsent(
+                                    track,
+                                    CandidateSource.TOP_ARTIST,
+                                    artist.genres(),
+                                    candidates,
+                                    trackIdentityKeys
                             )
-
-                            .filter(track ->
-                                    artist.id().equals(
-                                            track.artists()
-                                                    .get(0)
-                                                    .id()
-                                    )
-                            )
-
-                            .forEach(track ->
-                                    candidates.putIfAbsent(
-                                            track.id(),
-                                            toCandidate(
-                                                    track,
-                                                    CandidateSource.TOP_ARTIST,
-                                                    artist.genres()
-                                            )
-                                    )
-                            );
+                    );
                 });
+    }
+
+    private String trackIdentityKey(
+            SpotifyTrack track
+    ) {
+
+        if (
+                track.artists() == null ||
+                        track.artists().isEmpty()
+        ) {
+            return track.id();
+        }
+
+        String artistId =
+                track.artists()
+                        .get(0)
+                        .id();
+
+        String normalizedTitle =
+                track.name()
+                        .trim()
+                        .toLowerCase()
+                        .replaceAll(
+                                "\\s+",
+                                " "
+                        );
+
+        return artistId +
+                ":" +
+                normalizedTitle;
+    }
+
+    private void addCandidateIfAbsent(
+            SpotifyTrack track,
+            CandidateSource source,
+            List<String> artistGenres,
+            Map<String, DiscoveryCandidate> candidates,
+            Set<String> trackIdentityKeys
+    ) {
+
+        String identityKey =
+                trackIdentityKey(
+                        track
+                );
+
+        if (
+                trackIdentityKeys.contains(
+                        identityKey
+                )
+        ) {
+            return;
+        }
+
+        if (
+                candidates.containsKey(
+                        track.id()
+                )
+        ) {
+            return;
+        }
+
+        candidates.put(
+                track.id(),
+                toCandidate(
+                        track,
+                        source,
+                        artistGenres
+                )
+        );
+
+        trackIdentityKeys.add(
+                identityKey
+        );
     }
 
 
     private void addAdjacentArtistCandidates(
             List<SpotifyArtistResponse> artists,
             int tracksPerArtist,
-            Map<String, DiscoveryCandidate> candidates
+            Map<String, DiscoveryCandidate> candidates,
+            Set<String> trackIdentityKeys
     ) {
 
         artists.forEach(artist -> {
 
             List<SpotifyTrack> tracks =
-                    spotifyService.searchTrackCandidates(
-                            "artist:" + artist.name(),
+                    findValidTracksForArtist(
+                            artist,
                             tracksPerArtist
                     );
 
-            tracks.stream()
-
-                    /*
-                     * Spotify Search is fuzzy.
-                     *
-                     * Only accept tracks whose
-                     * primary artist is actually
-                     * the artist we searched for.
-                     */
-                    .filter(track ->
-                            track.artists() != null &&
-                                    !track.artists().isEmpty()
+            tracks.forEach(track ->
+                    addCandidateIfAbsent(
+                            track,
+                            CandidateSource.ADJACENT_ARTIST,
+                            artist.genres(),
+                            candidates,
+                            trackIdentityKeys
                     )
-
-                    .filter(track ->
-                            artist.id().equals(
-                                    track.artists()
-                                            .get(0)
-                                            .id()
-                            )
-                    )
-
-                    .forEach(track ->
-                            candidates.putIfAbsent(
-                                    track.id(),
-                                    toCandidate(
-                                            track,
-                                            CandidateSource.ADJACENT_ARTIST,
-                                            artist.genres()
-                                    )
-                            )
-                    );
+            );
         });
     }
 
@@ -294,7 +339,6 @@ public class DiscoveryCandidateGenerator {
         );
     }
 
-
     private List<SpotifyArtistResponse> findAdjacentArtists(
             List<SpotifyArtistResponse> topArtists,
             List<String> discoveryGenres
@@ -321,54 +365,216 @@ public class DiscoveryCandidateGenerator {
                 break;
             }
 
-            List<SpotifyArtistResponse> results =
-                    spotifyService.searchArtists(
-                            genre,
-                            10
-                    );
+            /*
+             * Search several result pages for each
+             * taste neighborhood instead of always
+             * consuming Spotify's first 10 results.
+             */
+            for (
+                    int page = 0;
+                    page < MAX_ARTIST_SEARCH_PAGES;
+                    page++
+            ) {
 
-            results.stream()
+                if (
+                        adjacentArtists.size() >=
+                                TARGET_ADJACENT_ARTISTS
+                ) {
+                    break;
+                }
 
-                    .filter(artist ->
-                            artist.id() != null
-                    )
+                int offset =
+                        page *
+                                ARTIST_SEARCH_PAGE_SIZE;
 
-                    .filter(artist ->
-                            !knownArtistIds.contains(
-                                    artist.id()
-                            )
-                    )
+                List<SpotifyArtistResponse> results =
+                        spotifyService.searchArtists(
+                                genre,
+                                ARTIST_SEARCH_PAGE_SIZE,
+                                offset
+                        );
 
-                    .filter(artist ->
-                            artist.genres() != null &&
-                                    !artist.genres().isEmpty()
-                    )
+                /*
+                 * No more Spotify results for
+                 * this genre.
+                 */
+                if (results.isEmpty()) {
+                    break;
+                }
 
-                    .filter(artist ->
-                            matchesSeedGenre(
-                                    genre,
-                                    artist.genres()
-                            )
-                    )
+                results.stream()
 
-                    .forEach(artist -> {
+                        /*
+                         * Valid Spotify artist.
+                         */
+                        .filter(artist ->
+                                artist.id() != null
+                        )
 
-                        if (
-                                adjacentArtists.size() <
-                                        TARGET_ADJACENT_ARTISTS
-                        ) {
-                            adjacentArtists.putIfAbsent(
-                                    artist.id(),
-                                    artist
-                            );
-                        }
-                    });
+                        /*
+                         * Don't rediscover one of
+                         * the user's existing top
+                         * Spotify artists.
+                         */
+                        .filter(artist ->
+                                !knownArtistIds.contains(
+                                        artist.id()
+                                )
+                        )
+
+                        /*
+                         * For our current high-
+                         * confidence strategy,
+                         * genre metadata is required.
+                         */
+                        .filter(artist ->
+                                artist.genres() != null &&
+                                        !artist.genres().isEmpty()
+                        )
+
+                        /*
+                         * Search itself is fuzzy,
+                         * so validate that Spotify's
+                         * artist metadata actually
+                         * contains the seed genre.
+                         */
+                        .filter(artist ->
+                                matchesSeedGenre(
+                                        genre,
+                                        artist.genres()
+                                )
+                        )
+
+                        /*
+                         * Artist ID deduplicates
+                         * artists discovered from
+                         * multiple seeds/pages.
+                         */
+                        .forEach(artist -> {
+
+                            if (
+                                    adjacentArtists.size() <
+                                            TARGET_ADJACENT_ARTISTS
+                            ) {
+                                adjacentArtists.putIfAbsent(
+                                        artist.id(),
+                                        artist
+                                );
+                            }
+                        });
+
+                /*
+                 * If Spotify returned fewer items
+                 * than the requested page size,
+                 * this genre has no next full page.
+                 */
+                if (
+                        results.size() <
+                                ARTIST_SEARCH_PAGE_SIZE
+                ) {
+                    break;
+                }
+            }
         }
 
         return List.copyOf(
                 adjacentArtists.values()
         );
     }
+
+    private List<SpotifyTrack> findValidTracksForArtist(
+            SpotifyArtistResponse artist,
+            int targetTracks
+    ) {
+
+        Map<String, SpotifyTrack> validTracks =
+                new LinkedHashMap<>();
+
+        for (
+                int page = 0;
+                page < MAX_TRACK_SEARCH_PAGES;
+                page++
+        ) {
+
+            if (
+                    validTracks.size() >=
+                            targetTracks
+            ) {
+                break;
+            }
+
+            int offset =
+                    page *
+                            TRACK_SEARCH_PAGE_SIZE;
+
+            List<SpotifyTrack> results =
+                    spotifyService.searchTrackCandidates(
+                            "artist:" + artist.name(),
+                            TRACK_SEARCH_PAGE_SIZE,
+                            offset
+                    );
+
+            if (results.isEmpty()) {
+                break;
+            }
+
+            results.stream()
+
+                    /*
+                     * Track must actually have
+                     * artist metadata.
+                     */
+                    .filter(track ->
+                            track.artists() != null &&
+                                    !track.artists().isEmpty()
+                    )
+
+                    /*
+                     * Spotify Search is fuzzy.
+                     *
+                     * Only keep tracks where the artist
+                     * we're mining is the PRIMARY artist.
+                     */
+                    .filter(track ->
+                            artist.id().equals(
+                                    track.artists()
+                                            .get(0)
+                                            .id()
+                            )
+                    )
+
+                    /*
+                     * Deduplicate by Spotify track ID.
+                     */
+                    .forEach(track -> {
+
+                        if (
+                                validTracks.size() <
+                                        targetTracks
+                        ) {
+                            validTracks.putIfAbsent(
+                                    track.id(),
+                                    track
+                            );
+                        }
+                    });
+
+            /*
+             * No next full page.
+             */
+            if (
+                    results.size() <
+                            TRACK_SEARCH_PAGE_SIZE
+            ) {
+                break;
+            }
+        }
+
+        return List.copyOf(
+                validTracks.values()
+        );
+    }
+
 
     private boolean matchesSeedGenre(
             String seedGenre,
