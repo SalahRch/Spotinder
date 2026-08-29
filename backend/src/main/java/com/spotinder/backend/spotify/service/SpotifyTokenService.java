@@ -54,8 +54,6 @@ public class SpotifyTokenService {
             );
         }
 
-        System.out.println("Bearer" + authorizedClient.getAccessToken().getTokenValue());
-
         return authorizedClient
                 .getAccessToken()
                 .getTokenValue();

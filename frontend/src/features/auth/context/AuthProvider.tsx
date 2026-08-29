@@ -1,4 +1,9 @@
-import { useMemo, type ReactNode } from "react";
+import {
+    useCallback,
+    useMemo,
+    type ReactNode,
+} from "react";
+
 import { useQueryClient } from "@tanstack/react-query";
 
 import { AuthContext } from "./AuthContext";
@@ -9,7 +14,10 @@ type AuthProviderProps = {
     children: ReactNode;
 };
 
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({
+                                 children,
+                             }: AuthProviderProps) {
+
     const queryClient = useQueryClient();
 
     const {
@@ -17,20 +25,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isLoading,
     } = useCurrentUser();
 
-    const refresh = async () => {
+    const refresh = useCallback(async () => {
         await queryClient.invalidateQueries({
             queryKey: ["current-user"],
         });
-    };
+    }, [queryClient]);
 
-    const logout = async () => {
+    const logout = useCallback(async () => {
         await authService.logout();
 
-        queryClient.setQueryData(["current-user"], undefined);
+        queryClient.setQueryData(
+            ["current-user"],
+            undefined,
+        );
+
         await queryClient.invalidateQueries({
             queryKey: ["current-user"],
         });
-    };
+    }, [queryClient]);
 
     const value = useMemo(
         () => ({
@@ -41,7 +53,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
             logout,
             refresh,
         }),
-        [user, isLoading],
+        [
+            user,
+            isLoading,
+            logout,
+            refresh,
+        ],
     );
 
     return (

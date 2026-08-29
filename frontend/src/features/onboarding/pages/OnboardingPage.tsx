@@ -30,7 +30,6 @@ import AdventureSetup
     from "../components/AdventureSetup";
 
 type Step =
-    | "ANALYSIS"
     | "PROFILE"
     | "ADVENTURE";
 
@@ -51,7 +50,7 @@ export default function OnboardingPage() {
         step,
         setStep,
     ] = useState<Step>(
-        "ANALYSIS",
+        "PROFILE",
     );
 
     const [
@@ -77,21 +76,9 @@ export default function OnboardingPage() {
         };
     }, []);
 
-    useEffect(() => {
-        if (
-            profile &&
-            analysisFinished &&
-            step === "ANALYSIS"
-        ) {
-            setStep(
-                "PROFILE",
-            );
-        }
-    }, [
-        profile,
-        analysisFinished,
-        step,
-    ]);
+    const showingAnalysis =
+        !profile ||
+        !analysisFinished;
 
     if (isError) {
         return (
@@ -169,8 +156,7 @@ export default function OnboardingPage() {
                 <AnimatePresence
                     mode="wait"
                 >
-                    {step ===
-                        "ANALYSIS" && (
+                    {showingAnalysis && (
                             <motion.div
                                 key="analysis"
                                 initial={{
@@ -196,8 +182,8 @@ export default function OnboardingPage() {
                             </motion.div>
                         )}
 
-                    {step ===
-                        "PROFILE" &&
+                    {!showingAnalysis &&
+                        step === "PROFILE" &&
                         profile && (
                             <motion.div
                                 key="profile"

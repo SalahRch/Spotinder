@@ -5,7 +5,7 @@ import {
     FiPlay,
     FiRefreshCw, FiX,
 } from "react-icons/fi";
-import { usePlayer } from "../context/SpotifyPlayerContext";
+import { usePlayer } from "../context/PlayerContext.ts";
 
 function formatTime(milliseconds: number) {
     if (!milliseconds) {

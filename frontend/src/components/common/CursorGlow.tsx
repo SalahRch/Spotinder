@@ -29,7 +29,10 @@ export default function CursorGlow() {
 
         }
 
-        window.addEventListener("mousemove", handleMove);
+        window.addEventListener(
+            "mousemove",
+            handleMove
+        );
 
         return () =>
             window.removeEventListener(
@@ -37,7 +40,7 @@ export default function CursorGlow() {
                 handleMove
             );
 
-    }, []);
+    }, [mouseX, mouseY]);
 
     return (
 

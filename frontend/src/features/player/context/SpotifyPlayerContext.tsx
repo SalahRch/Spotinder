@@ -1,8 +1,15 @@
 import {
-    createContext,
-    useContext,
     useState,
 } from "react";
+
+import {
+    SpotifyPlayerContext,
+} from "./PlayerContext.ts";
+
+import type {
+    PlaybackSource,
+    PlayerTrack,
+} from "./PlayerContext.ts";
 
 import type {
     ReactNode,
@@ -12,54 +19,6 @@ import toast from "react-hot-toast";
 
 import { playSpotifyTrack } from "../api/playback";
 import { useSpotifyPlayer } from "../hooks/useSpotifyPlayer";
-
-export type PlayerTrack = {
-    id: string;
-    title: string;
-    artist: string;
-    albumImage: string | null;
-};
-
-export type PlaybackSource =
-    | "discover"
-    | "likes";
-
-type SpotifyPlayerContextValue = {
-    currentTrack: PlayerTrack | null;
-
-    deviceId: string | null;
-    isReady: boolean;
-    isPlaying: boolean;
-
-    playbackSource: PlaybackSource | null;
-
-    position: number;
-    duration: number;
-
-    playTrack: (
-        track: PlayerTrack,
-        source: PlaybackSource,
-    ) => Promise<void>;
-
-    toggleTrack: (
-        track: PlayerTrack,
-        source: PlaybackSource,
-    ) => Promise<void>;
-
-    pause: () => Promise<void>;
-    resume: () => Promise<void>;
-    restart: () => Promise<void>;
-    seek: (
-        positionMs: number,
-    ) => Promise<void>;
-
-    stopAndReset: () => Promise<void>;
-};
-
-const SpotifyPlayerContext =
-    createContext<
-        SpotifyPlayerContextValue | undefined
-    >(undefined);
 
 type SpotifyPlayerProviderProps = {
     children: ReactNode;
@@ -224,19 +183,4 @@ export function SpotifyPlayerProvider({
             {children}
         </SpotifyPlayerContext.Provider>
     );
-}
-
-export function usePlayer() {
-    const context =
-        useContext(
-            SpotifyPlayerContext,
-        );
-
-    if (!context) {
-        throw new Error(
-            "usePlayer must be used inside SpotifyPlayerProvider.",
-        );
-    }
-
-    return context;
 }

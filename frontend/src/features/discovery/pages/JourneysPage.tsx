@@ -9,20 +9,20 @@ import {
 
 import {
     useJourneys,
-} from "@/features/discovery/hooks/useJourneys";
+} from "@/features/discovery/hooks/useJourneys.ts";
 
 import JourneyCollectionCard
-    from "@/features/discovery/components/JourneyCollectionCard";
+    from "@/features/discovery/components/JourneyCollectionCard.tsx";
 
 import JourneyEmptyState
-    from "@/features/discovery/components/JourneyEmptyState";
+    from "@/features/discovery/components/JourneyEmptyState.tsx";
 
 import JourneyArchiveEmptyState
-    from "@/features/discovery/components/JourneyArchiveEmptyState";
+    from "@/features/discovery/components/JourneyArchiveEmptyState.tsx";
 
 import type {
     JourneySummary,
-} from "@/features/discovery/types/discovery";
+} from "@/features/discovery/types/discovery.ts";
 
 type DateFilter =
     | "ALL"

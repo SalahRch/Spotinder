@@ -11,7 +11,7 @@ import {
 import Sidebar from "@/components/layout/Sidebar";
 import {
     SpotifyPlayerProvider,
-} from "@/features/player/context/SpotifyPlayerContext.tsx";
+} from "@/features/player/context/SpotifyPlayerContext";
 import MiniPlayer from "@/features/player/components/MiniPlayer";
 
 export default function AppLayout() {

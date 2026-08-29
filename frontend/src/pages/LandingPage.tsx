@@ -13,7 +13,7 @@ import FloatingAlbums from "../components/common/FloatingAlbums";
 import FadeInSection from "../components/animations/FadeInSection";
 import SectionDivider from "../components/common/SectionDivider";
 
-import PhoneMockup from "../PhoneMockup/PhoneMockup";
+import PhoneMockup from "@/components/landing/PhoneMockup/PhoneMockup";
 
 import HowItWorks from "../components/sections/HowItWorks";
 import WhySpotinder from "../components/sections/WhySpotinder";

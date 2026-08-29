@@ -2,9 +2,9 @@ package com.spotinder.backend.discovery.controller;
 
 import com.spotinder.backend.discovery.dto.DailyDiscoveryRecapResponse;
 import com.spotinder.backend.discovery.dto.JourneySummaryResponse;
-import com.spotinder.backend.discovery.service.DailyDiscoveryService;
+import com.spotinder.backend.discovery.model.*;
+import com.spotinder.backend.discovery.service.*;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +14,7 @@ public class JourneyController {
 
     private final DailyDiscoveryService
             dailyDiscoveryService;
+
 
     public JourneyController(
             DailyDiscoveryService dailyDiscoveryService
@@ -35,4 +36,7 @@ public class JourneyController {
                 journeyId
         );
     }
+
+
+
 }

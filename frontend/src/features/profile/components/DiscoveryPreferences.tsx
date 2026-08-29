@@ -1,5 +1,4 @@
 import {
-    useEffect,
     useState,
 } from "react";
 
@@ -43,15 +42,6 @@ export default function DiscoveryPreferences({
         profile.blindModeDefault,
     );
 
-    useEffect(() => {
-        setAdventureLevel(
-            profile.adventureLevel,
-        );
-
-        setBlindMode(
-            profile.blindModeDefault,
-        );
-    }, [profile]);
 
     const handleAdventureCommit =
         async () => {

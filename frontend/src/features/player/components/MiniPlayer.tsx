@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 
 import DiscoverNowPlaying from "./DiscoverNowPlaying";
 import HorizontalMiniPlayer from "./HorizontalMiniPlayer";
-import { usePlayer } from "@/features/player/context/SpotifyPlayerContext";
+import { usePlayer } from "@/features/player/context/PlayerContext.ts";
 
 export default function MiniPlayer() {
     const location = useLocation();

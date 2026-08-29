@@ -24,7 +24,7 @@ import type { Recommendation } from "../types/discovery";
 
 import { useRecommendations } from "../hooks/useRecommendations";
 import { useRecordSwipe } from "../hooks/useRecordSwipe";
-import {usePlayer} from "@/features/player/context/SpotifyPlayerContext.tsx";
+import {usePlayer} from "@/features/player/context/PlayerContext.ts";
 import AuroraText from "@/components/animations/AuroraText.tsx";
 import {useDailyDiscoveryRecap} from "@/features/discovery/hooks/useDailyDiscoveryRecap.ts";
 import DailyJourneyRecap from "@/features/discovery/components/DailyJourneyRecap.tsx";
@@ -161,12 +161,9 @@ export default function DiscoverPage() {
         blindMode,
         setBlindMode,
     ] = useState(
-        user?.blindModeDefault ?? false,
-    );useEffect(() => {
-        setBlindMode(
-            user?.blindModeDefault ?? false,
-        );
-    }, [user?.blindModeDefault]);
+        () => user?.blindModeDefault ?? false,
+    );
+
 
 
     const player =

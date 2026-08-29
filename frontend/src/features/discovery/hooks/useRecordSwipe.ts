@@ -44,9 +44,15 @@ export function useRecordSwipe(
                 }),
 
                 queryClient.invalidateQueries({
-                    queryKey: [
-                        "daily-discovery",
-                    ],
+                    queryKey: ["daily-discovery"],
+                }),
+
+                queryClient.invalidateQueries({
+                    queryKey: ["journeys"],
+                }),
+
+                queryClient.invalidateQueries({
+                    queryKey: ["daily-discovery-recap"],
                 }),
             ]);
         },

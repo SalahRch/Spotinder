@@ -17,7 +17,7 @@ import LikesHero from "../components/LikesHero";
 import LikedSongRow from "../components/LikedSongRow";
 import CreatePlaylistModal from "@/features/playlists/components/CreatePlaylistModal";
 import { useLikes } from "../hooks/useLikes";
-import {usePlayer} from "@/features/player/context/SpotifyPlayerContext.tsx";
+import {usePlayer} from "@/features/player/context/PlayerContext.ts";
 
 export default function LikesPage() {
     const {

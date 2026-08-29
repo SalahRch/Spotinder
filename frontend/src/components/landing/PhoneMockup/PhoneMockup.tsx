@@ -1,10 +1,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
-import StatusBar from "./StatusBar";
-import AlbumCard from "./AlbumCard";
+import StatusBar from "./StatusBar.tsx";
+import AlbumCard from "./AlbumCard.tsx";
 
-import { songs } from "../assets/songs";
+import { songs } from "../../../assets/songs.ts";
 
 export default function PhoneMockup() {
     const [currentSong, setCurrentSong] = useState(0);

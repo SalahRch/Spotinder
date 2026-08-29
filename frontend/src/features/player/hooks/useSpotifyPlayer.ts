@@ -279,7 +279,6 @@ export function useSpotifyPlayer() {
     };
 
     return {
-        player: playerRef.current,
 
         deviceId,
         isReady,

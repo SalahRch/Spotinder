@@ -15,11 +15,11 @@ import LikesPage from "@/features/likes/pages/LikesPage";
 import InsightsPage from "@/features/insights/pages/InsightsPage";
 import ProfilePage from "@/features/profile/pages/ProfilePage";
 import SettingsPage from "@/features/settings/pages/SettingsPage";
-import JourneysPage from "@/features/Journeys/JourneysPage";
+import JourneysPage from "@/features/discovery/pages/JourneysPage.tsx";
 
 import OnboardingPage
     from "@/features/onboarding/pages/OnboardingPage";
-import JourneyDetailPage from "@/features/discovery/components/JourneyDetailPage.tsx";
+import JourneyDetailPage from "@/features/discovery/pages/JourneyDetailPage.tsx";
 
 export const router =
     createBrowserRouter([

@@ -62,6 +62,7 @@ export default function ProfilePage() {
                     profile={profile}
                 />
                 <DiscoveryPreferences
+                    key={`${profile.adventureLevel}-${profile.blindModeDefault}`}
                     profile={profile}
                 />
 

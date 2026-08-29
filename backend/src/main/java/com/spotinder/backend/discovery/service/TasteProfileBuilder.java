@@ -214,50 +214,6 @@ public class TasteProfileBuilder {
                         swipes.size()
                 );
 
-
-        System.out.println(
-                "Spotify artist affinity:"
-        );
-
-        profile.spotifyArtistAffinity()
-                .forEach((artistId, score) ->
-                        System.out.printf(
-                                "  %s -> %.2f%n",
-                                artistId,
-                                score
-                        )
-                );
-
-        System.out.println(
-                "\nSpotinder genre signals:"
-        );
-
-        discoveryGenreAffinity.forEach(
-                (genre, signal) ->
-                        System.out.printf(
-                                "  %s -> pref=%.2f, conf=%.2f, artists=%d%n",
-                                genre,
-                                signal.preference(),
-                                signal.confidence(),
-                                signal.evidenceCount()
-                        )
-        );
-
-
-
-        System.out.println(
-                "Spotify genre affinity:"
-        );
-
-        profile.spotifyGenreAffinity()
-                .forEach((genre, score) ->
-                        System.out.printf(
-                                "  %s -> %.2f%n",
-                                genre,
-                                score
-                        )
-                );
-
         return profile;
     }
 

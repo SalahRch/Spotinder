@@ -18,16 +18,16 @@ import {
 
 import {
     useJourney,
-} from "@/features/discovery/hooks/useJourney";
+} from "@/features/discovery/hooks/useJourney.ts";
 
 import JourneyPersonaAtmosphere
-    from "@/features/discovery/components/JourneyPersonaAtmosphere";
+    from "@/features/discovery/components/JourneyPersonaAtmosphere.tsx";
 
 import JourneySharePreview
-    from "@/features/discovery/components/JourneySharePreview";
+    from "@/features/discovery/components/JourneySharePreview.tsx";
 
 import JourneyTrackRow
-    from "@/features/discovery/components/JourneyTrackRow";
+    from "@/features/discovery/components/JourneyTrackRow.tsx";
 
 function formatPersona(
     persona: string,

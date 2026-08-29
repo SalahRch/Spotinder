@@ -31,6 +31,10 @@ export function useUpdatePreferences() {
                 queryClient.invalidateQueries({
                     queryKey: ["current-user"],
                 }),
+
+                queryClient.invalidateQueries({
+                    queryKey: ["recommendations"],
+                }),
             ]);
         },
     });

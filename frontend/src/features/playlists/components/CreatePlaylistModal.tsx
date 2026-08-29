@@ -1,5 +1,4 @@
 import {
-    useEffect,
     useState,
 } from "react";
 
@@ -49,16 +48,17 @@ export default function CreatePlaylistModal({
     const createPlaylist =
         useCreatePlaylist();
 
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-
+    const resetModal = () => {
         setCreatedPlaylist(null);
         setName(
             "Spotinder Discoveries",
         );
-    }, [open]);
+    };
+
+    const handleClose = () => {
+        resetModal();
+        onClose();
+    };
 
     const handleCreate =
         async () => {
@@ -123,7 +123,7 @@ export default function CreatePlaylistModal({
                         backdrop-blur-md
                     "
                     onMouseDown={
-                        onClose
+                        handleClose
                     }
                 >
                     <motion.div
@@ -192,7 +192,7 @@ export default function CreatePlaylistModal({
                                 type="button"
                                 aria-label="Close"
                                 onClick={
-                                    onClose
+                                    handleClose
                                 }
                                 className="
                                     absolute
@@ -461,7 +461,7 @@ export default function CreatePlaylistModal({
                                     <button
                                         type="button"
                                         onClick={
-                                            onClose
+                                            handleClose
                                         }
                                         className="
                                             mt-3
