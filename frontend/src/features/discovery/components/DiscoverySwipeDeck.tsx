@@ -40,14 +40,16 @@ type DiscoverySwipeDeckProps = {
     position?: number;
     duration?: number;
 
-
     onSwipe?: (
         direction: SwipeDirection,
         recommendation: Recommendation,
     ) => Promise<void> | void;
 };
 
-const DISCOVERY_INDEX_KEY =
+const DISCOVERY_TRACK_KEY =
+    "spotinder-discovery-track";
+
+const LEGACY_DISCOVERY_INDEX_KEY =
     "spotinder-discovery-index";
 
 const DiscoverySwipeDeck = forwardRef<
@@ -69,25 +71,44 @@ const DiscoverySwipeDeck = forwardRef<
     },
     ref,
 ) {
-
     const [index, setIndex] =
         useState(() => {
-            const savedIndex =
+            /*
+             * Remove the old index-based persistence.
+             *
+             * The old implementation stored an array index,
+             * which could become stale when Spotify/backend
+             * returned a new recommendation pool.
+             */
+            sessionStorage.removeItem(
+                LEGACY_DISCOVERY_INDEX_KEY,
+            );
+
+            const savedTrackId =
                 sessionStorage.getItem(
-                    DISCOVERY_INDEX_KEY,
+                    DISCOVERY_TRACK_KEY,
                 );
 
-            if (!savedIndex) {
+            if (!savedTrackId) {
                 return 0;
             }
 
-            const parsedIndex =
-                Number(savedIndex);
+            const savedIndex =
+                recommendations.findIndex(
+                    (recommendation) =>
+                        recommendation.id ===
+                        savedTrackId,
+                );
 
-            return Number.isFinite(
-                parsedIndex,
-            )
-                ? parsedIndex
+            /*
+             * If the saved track still exists in this
+             * recommendation pool, continue from it.
+             *
+             * Otherwise this is effectively a fresh deck,
+             * so begin from the first recommendation.
+             */
+            return savedIndex >= 0
+                ? savedIndex
                 : 0;
         });
 
@@ -129,16 +150,32 @@ const DiscoverySwipeDeck = forwardRef<
                 const nextIndex =
                     current + 1;
 
-                sessionStorage.setItem(
-                    DISCOVERY_INDEX_KEY,
-                    String(nextIndex),
-                );
+                const nextRecommendation =
+                    recommendations[nextIndex];
+
+                /*
+                 * Persist the identity of the next card,
+                 * not its position in the array.
+                 */
+                if (nextRecommendation) {
+                    sessionStorage.setItem(
+                        DISCOVERY_TRACK_KEY,
+                        nextRecommendation.id,
+                    );
+                } else {
+                    /*
+                     * The current deck is exhausted.
+                     * Don't leave stale persistence behind.
+                     */
+                    sessionStorage.removeItem(
+                        DISCOVERY_TRACK_KEY,
+                    );
+                }
 
                 return nextIndex;
             });
 
             setDragProgress(0);
-
 
             // Persist swipe in the background.
             void Promise.resolve(
@@ -161,6 +198,7 @@ const DiscoverySwipeDeck = forwardRef<
         },
         [
             onSwipe,
+            recommendations,
         ],
     );
 
