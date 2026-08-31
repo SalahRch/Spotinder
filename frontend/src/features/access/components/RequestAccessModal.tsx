@@ -18,12 +18,15 @@ import { requestAccess } from "../services/access";
 type RequestAccessModalProps = {
     open: boolean;
     onClose: () => void;
+    variant?: "default" | "oauth-limited";
 };
 
 export default function RequestAccessModal({
                                                open,
                                                onClose,
+                                               variant = "default",
                                            }: RequestAccessModalProps) {
+    const isOAuthLimited = variant === "oauth-limited";
     const [email, setEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -192,42 +195,100 @@ export default function RequestAccessModal({
 
                                 <p
                                     className="
-                                        text-xs
-                                        font-semibold
-                                        uppercase
-                                        tracking-[0.2em]
-                                        text-violet-300
-                                    "
+        text-xs
+        font-semibold
+        uppercase
+        tracking-[0.22em]
+        text-violet-300
+    "
                                 >
-                                    Early Access
+                                    {isOAuthLimited
+                                        ? "Private Beta"
+                                        : "Early Access"}
                                 </p>
 
                                 <h2
                                     className="
-                                        mt-3
-                                        text-3xl
-                                        font-semibold
-                                        tracking-tight
-                                        text-slate-100
-                                    "
+        mt-3
+        text-3xl
+        font-semibold
+        tracking-tight
+        text-slate-100
+    "
                                 >
-                                    Want to try Spotinder?
+                                    {isOAuthLimited
+                                        ? "You found us early."
+                                        : "Want to try Spotinder?"}
                                 </h2>
 
                                 <p
                                     className="
-                                        mt-4
-                                        text-sm
-                                        leading-6
-                                        text-slate-400
-                                    "
+        mt-4
+        text-sm
+        leading-6
+        text-slate-400
+    "
                                 >
-                                    Spotify currently limits Spotinder
-                                    to a small number of approved test
-                                    accounts. Request access and I'll
-                                    add your account when a spot is
-                                    available.
+                                    {isOAuthLimited ? (
+                                        <>
+                                            Spotinder is still in private beta, and
+                                            Spotify currently limits how many listeners
+                                            can connect while we're building.
+                                            <span className="mt-3 block text-slate-300">
+                So we're opening the doors a few
+                listeners at a time.
+            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            Spotify currently limits Spotinder to a
+                                            small number of approved test accounts.
+                                            Request access and I'll add your account
+                                            when a spot is available.
+                                        </>
+                                    )}
                                 </p>
+
+                                {isOAuthLimited && (
+                                    <div
+                                        className="
+            mt-6
+            flex
+            items-start
+            gap-3
+            rounded-2xl
+            border
+            border-white/[0.07]
+            bg-white/[0.03]
+            px-4
+            py-3.5
+        "
+                                    >
+        <span
+            className="
+                mt-[2px]
+                h-2
+                w-2
+                shrink-0
+                rounded-full
+                bg-emerald-400
+                shadow-[0_0_12px_rgba(52,211,153,0.7)]
+            "
+        />
+
+                                        <p
+                                            className="
+                text-xs
+                leading-5
+                text-slate-500
+            "
+                                        >
+                                            Spotinder is live and working — access is
+                                            currently limited by Spotify's development
+                                            policy.
+                                        </p>
+                                    </div>
+                                )}
 
                                 <form
                                     onSubmit={handleSubmit}
@@ -302,7 +363,9 @@ export default function RequestAccessModal({
                                     >
                                         {isSubmitting
                                             ? "Requesting..."
-                                            : "Request early access"}
+                                            : isOAuthLimited
+                                                ? "Request an invite"
+                                                : "Request early access"}
                                     </button>
                                 </form>
 

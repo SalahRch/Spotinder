@@ -28,28 +28,47 @@ import Footer from "../components/sections/Footer";
 import CursorGlow from "../components/common/CursorGlow";
 
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import toast from "react-hot-toast";
+
 
 export default function LandingPage() {
     const navigate = useNavigate();
+
     const [accessModalOpen, setAccessModalOpen] =
-        useState(false);
+        useState(() => {
+            const params =
+                new URLSearchParams(window.location.search);
+
+            return (
+                params.get("authError") ===
+                "spotify_auth_failed"
+            );
+        });
+
+    const [accessModalVariant, setAccessModalVariant] =
+        useState<"default" | "oauth-limited">(() => {
+            const params =
+                new URLSearchParams(window.location.search);
+
+            return params.get("authError") ===
+            "spotify_auth_failed"
+                ? "oauth-limited"
+                : "default";
+        });
 
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const authError = params.get("authError");
-
-        if (!authError) return;
-
-        toast.error(
-            "Couldn't connect to Spotify. Make sure your account has access to the Spotinder beta."
-        );
-
-        // Clean ?authError=... from the URL
         const url = new URL(window.location.href);
+
+        if (!url.searchParams.has("authError")) {
+            return;
+        }
+
         url.searchParams.delete("authError");
 
-        window.history.replaceState({}, "", url.toString());
+        window.history.replaceState(
+            {},
+            "",
+            url.toString(),
+        );
     }, []);
 
     const {
@@ -194,7 +213,10 @@ export default function LandingPage() {
 
                             <button
                                 type="button"
-                                onClick={() => setAccessModalOpen(true)}
+                                onClick={() => {
+                                    setAccessModalVariant("default");
+                                    setAccessModalOpen(true);
+                                }}
                                 className="
             text-sm
             text-slate-500
@@ -253,6 +275,7 @@ export default function LandingPage() {
             <Footer />
             <RequestAccessModal
                 open={accessModalOpen}
+                variant={accessModalVariant}
                 onClose={() => setAccessModalOpen(false)}
             />
         </main>
