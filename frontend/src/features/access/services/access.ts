@@ -7,5 +7,5 @@ export type AccessRequestPayload = {
 export async function requestAccess(
     payload: AccessRequestPayload,
 ): Promise<void> {
-    await api.post("/api/v1/access-requests", payload);
+    await api.post("/access-requests", payload);
 }
