@@ -2,17 +2,24 @@ import {
     AnimatePresence,
     motion,
 } from "framer-motion";
+
 import {
     type FormEvent,
     useState,
 } from "react";
+
+import { useQueryClient } from "@tanstack/react-query";
+
 import {
     FiCheck,
     FiMail,
+    FiUsers,
     FiX,
 } from "react-icons/fi";
+
 import toast from "react-hot-toast";
 
+import { useAccessRequestCount } from "../hooks/useAccessRequestCount";
 import { requestAccess } from "../services/access";
 
 type RequestAccessModalProps = {
@@ -26,19 +33,36 @@ export default function RequestAccessModal({
                                                onClose,
                                                variant = "default",
                                            }: RequestAccessModalProps) {
-    const isOAuthLimited = variant === "oauth-limited";
-    const [email, setEmail] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
+    const queryClient = useQueryClient();
+
+    const { data: accessCount } = useAccessRequestCount();
+
+    const pendingCount = accessCount?.pending ?? 0;
+
+    const isOAuthLimited =
+        variant === "oauth-limited";
+
+    const [email, setEmail] =
+        useState("");
+
+    const [isSubmitting, setIsSubmitting] =
+        useState(false);
+
+    const [submitted, setSubmitted] =
+        useState(false);
 
     const handleSubmit = async (
         event: FormEvent<HTMLFormElement>,
     ) => {
         event.preventDefault();
 
-        const normalizedEmail = email.trim();
+        const normalizedEmail =
+            email.trim();
 
-        if (!normalizedEmail || isSubmitting) {
+        if (
+            !normalizedEmail ||
+            isSubmitting
+        ) {
             return;
         }
 
@@ -49,7 +73,17 @@ export default function RequestAccessModal({
                 email: normalizedEmail,
             });
 
+            await queryClient.invalidateQueries({
+                queryKey: [
+                    "access-request-count",
+                ],
+            });
+
             setSubmitted(true);
+
+            toast.success(
+                "Access request received!",
+            );
         } catch {
             toast.error(
                 "Couldn't send your access request. Please try again.",
@@ -69,10 +103,18 @@ export default function RequestAccessModal({
         <AnimatePresence>
             {open && (
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onMouseDown={handleClose}
+                    initial={{
+                        opacity: 0,
+                    }}
+                    animate={{
+                        opacity: 1,
+                    }}
+                    exit={{
+                        opacity: 0,
+                    }}
+                    onMouseDown={
+                        handleClose
+                    }
                     className="
                         fixed
                         inset-0
@@ -105,7 +147,9 @@ export default function RequestAccessModal({
                             duration: 0.22,
                             ease: "easeOut",
                         }}
-                        onMouseDown={(event) =>
+                        onMouseDown={(
+                            event,
+                        ) =>
                             event.stopPropagation()
                         }
                         className="
@@ -134,7 +178,7 @@ export default function RequestAccessModal({
                                 h-56
                                 w-56
                                 rounded-full
-                                bg-violet-500/15
+                                bg-cyan-400/10
                                 blur-[80px]
                             "
                         />
@@ -148,14 +192,16 @@ export default function RequestAccessModal({
                                 h-52
                                 w-52
                                 rounded-full
-                                bg-cyan-400/10
+                                bg-emerald-400/[0.07]
                                 blur-[80px]
                             "
                         />
 
                         <button
                             type="button"
-                            onClick={handleClose}
+                            onClick={
+                                handleClose
+                            }
                             aria-label="Close access request"
                             className="
                                 absolute
@@ -170,7 +216,11 @@ export default function RequestAccessModal({
                                 hover:text-slate-200
                             "
                         >
-                            <FiX size={19} />
+                            <FiX
+                                size={
+                                    19
+                                }
+                            />
                         </button>
 
                         {!submitted ? (
@@ -185,22 +235,26 @@ export default function RequestAccessModal({
                                         justify-center
                                         rounded-2xl
                                         border
-                                        border-violet-400/20
-                                        bg-violet-400/10
-                                        text-violet-300
+                                        border-cyan-400/20
+                                        bg-cyan-400/10
+                                        text-cyan-300
                                     "
                                 >
-                                    <FiMail size={21} />
+                                    <FiMail
+                                        size={
+                                            21
+                                        }
+                                    />
                                 </div>
 
                                 <p
                                     className="
-        text-xs
-        font-semibold
-        uppercase
-        tracking-[0.22em]
-        text-violet-300
-    "
+                                        text-xs
+                                        font-semibold
+                                        uppercase
+                                        tracking-[0.22em]
+                                        text-cyan-300
+                                    "
                                 >
                                     {isOAuthLimited
                                         ? "Private Beta"
@@ -209,12 +263,12 @@ export default function RequestAccessModal({
 
                                 <h2
                                     className="
-        mt-3
-        text-3xl
-        font-semibold
-        tracking-tight
-        text-slate-100
-    "
+                                        mt-3
+                                        text-3xl
+                                        font-semibold
+                                        tracking-tight
+                                        text-slate-100
+                                    "
                                 >
                                     {isOAuthLimited
                                         ? "You found us early."
@@ -223,28 +277,61 @@ export default function RequestAccessModal({
 
                                 <p
                                     className="
-        mt-4
-        text-sm
-        leading-6
-        text-slate-400
-    "
+                                        mt-4
+                                        text-sm
+                                        leading-6
+                                        text-slate-400
+                                    "
                                 >
                                     {isOAuthLimited ? (
                                         <>
-                                            Spotinder is still in private beta, and
-                                            Spotify currently limits how many listeners
-                                            can connect while we're building.
+                                            Spotinder
+                                            is still
+                                            in private
+                                            beta, and
+                                            Spotify
+                                            currently
+                                            limits
+                                            how many
+                                            listeners
+                                            can connect
+                                            while
+                                            we're
+                                            building.
+
                                             <span className="mt-3 block text-slate-300">
-                So we're opening the doors a few
-                listeners at a time.
-            </span>
+                                                So
+                                                we're
+                                                opening
+                                                the
+                                                doors
+                                                a few
+                                                listeners
+                                                at a
+                                                time.
+                                            </span>
                                         </>
                                     ) : (
                                         <>
-                                            Spotify currently limits Spotinder to a
-                                            small number of approved test accounts.
-                                            Request access and I'll add your account
-                                            when a spot is available.
+                                            Spotify
+                                            currently
+                                            limits
+                                            Spotinder
+                                            to a
+                                            small
+                                            number
+                                            of
+                                            approved
+                                            test
+                                            accounts.
+                                            Request
+                                            access
+                                            and I'll
+                                            add your
+                                            account
+                                            when a
+                                            spot is
+                                            available.
                                         </>
                                     )}
                                 </p>
@@ -252,46 +339,114 @@ export default function RequestAccessModal({
                                 {isOAuthLimited && (
                                     <div
                                         className="
-            mt-6
-            flex
-            items-start
-            gap-3
-            rounded-2xl
-            border
-            border-white/[0.07]
-            bg-white/[0.03]
-            px-4
-            py-3.5
-        "
+                                            mt-6
+                                            flex
+                                            items-start
+                                            gap-3
+                                            rounded-2xl
+                                            border
+                                            border-white/[0.07]
+                                            bg-white/[0.03]
+                                            px-4
+                                            py-3.5
+                                        "
                                     >
-        <span
-            className="
-                mt-[2px]
-                h-2
-                w-2
-                shrink-0
-                rounded-full
-                bg-emerald-400
-                shadow-[0_0_12px_rgba(52,211,153,0.7)]
-            "
-        />
+                                        <span
+                                            className="
+                                                mt-[2px]
+                                                h-2
+                                                w-2
+                                                shrink-0
+                                                rounded-full
+                                                bg-emerald-400
+                                                shadow-[0_0_12px_rgba(52,211,153,0.7)]
+                                            "
+                                        />
 
                                         <p
                                             className="
-                text-xs
-                leading-5
-                text-slate-500
-            "
+                                                text-xs
+                                                leading-5
+                                                text-slate-500
+                                            "
                                         >
-                                            Spotinder is live and working — access is
-                                            currently limited by Spotify's development
+                                            Spotinder
+                                            is live
+                                            and
+                                            working —
+                                            access is
+                                            currently
+                                            limited by
+                                            Spotify's
+                                            development
                                             policy.
                                         </p>
                                     </div>
                                 )}
 
+                                {pendingCount >= 3 && (
+                                    <div
+                                        className="
+                                            mt-4
+                                            flex
+                                            items-center
+                                            gap-3
+                                            rounded-2xl
+                                            border
+                                            border-cyan-400/10
+                                            bg-cyan-400/[0.04]
+                                            px-4
+                                            py-3.5
+                                        "
+                                    >
+                                        <div
+                                            className="
+                                                flex
+                                                h-8
+                                                w-8
+                                                shrink-0
+                                                items-center
+                                                justify-center
+                                                rounded-xl
+                                                border
+                                                border-cyan-400/15
+                                                bg-cyan-400/[0.07]
+                                                text-cyan-300
+                                            "
+                                        >
+                                            <FiUsers
+                                                size={
+                                                    15
+                                                }
+                                            />
+                                        </div>
+
+                                        <p
+                                            className="
+                                                text-xs
+                                                leading-5
+                                                text-slate-400
+                                            "
+                                        >
+                                            <span className="font-semibold text-slate-200">
+                                                {
+                                                    pendingCount
+                                                }
+                                            </span>{" "}
+                                            listeners
+                                            are
+                                            currently
+                                            waiting
+                                            for
+                                            access.
+                                        </p>
+                                    </div>
+                                )}
+
                                 <form
-                                    onSubmit={handleSubmit}
+                                    onSubmit={
+                                        handleSubmit
+                                    }
                                     className="mt-8"
                                 >
                                     <label
@@ -304,7 +459,9 @@ export default function RequestAccessModal({
                                             text-slate-300
                                         "
                                     >
-                                        Spotify account email
+                                        Spotify
+                                        account
+                                        email
                                     </label>
 
                                     <input
@@ -312,10 +469,16 @@ export default function RequestAccessModal({
                                         type="email"
                                         required
                                         autoComplete="email"
-                                        value={email}
-                                        onChange={(event) =>
+                                        value={
+                                            email
+                                        }
+                                        onChange={(
+                                            event,
+                                        ) =>
                                             setEmail(
-                                                event.target.value,
+                                                event
+                                                    .target
+                                                    .value,
                                             )
                                         }
                                         placeholder="you@example.com"
@@ -332,40 +495,66 @@ export default function RequestAccessModal({
                                             outline-none
                                             transition
                                             placeholder:text-slate-600
-                                            focus:border-violet-400/40
+                                            focus:border-cyan-400/30
                                             focus:bg-white/[0.07]
-                                            focus:shadow-[0_0_30px_rgba(139,92,246,0.08)]
+                                            focus:shadow-[0_0_30px_rgba(34,211,238,0.08)]
                                         "
                                     />
 
                                     <button
                                         type="submit"
-                                        disabled={isSubmitting}
+                                        disabled={
+                                            isSubmitting
+                                        }
                                         className="
+                                            group
+                                            relative
                                             mt-4
                                             w-full
+                                            overflow-hidden
                                             rounded-2xl
                                             border
-                                            border-violet-400/20
-                                            bg-violet-500/90
+                                            border-cyan-300/20
+                                            bg-[#0b1220]
                                             px-5
                                             py-3.5
                                             text-sm
                                             font-semibold
-                                            text-white
-                                            transition
+                                            text-cyan-100
+                                            shadow-[0_12px_35px_rgba(0,0,0,0.35)]
+                                            transition-all
+                                            duration-300
                                             hover:-translate-y-0.5
-                                            hover:bg-violet-500
-                                            hover:shadow-[0_0_35px_rgba(139,92,246,0.25)]
+                                            hover:border-cyan-300/40
+                                            hover:bg-[#0d1827]
+                                            hover:text-white
+                                            hover:shadow-[0_0_35px_rgba(34,211,238,0.16)]
                                             disabled:cursor-not-allowed
                                             disabled:opacity-50
                                         "
                                     >
-                                        {isSubmitting
-                                            ? "Requesting..."
-                                            : isOAuthLimited
-                                                ? "Request an invite"
-                                                : "Request early access"}
+                                        <span
+                                            className="
+                                                pointer-events-none
+                                                absolute
+                                                inset-x-12
+                                                -top-px
+                                                h-px
+                                                bg-gradient-to-r
+                                                from-transparent
+                                                via-cyan-300/70
+                                                to-transparent
+                                                opacity-70
+                                            "
+                                        />
+
+                                        <span className="relative z-10">
+                                            {isSubmitting
+                                                ? "Requesting..."
+                                                : isOAuthLimited
+                                                    ? "Request an invite"
+                                                    : "Request early access"}
+                                        </span>
                                     </button>
                                 </form>
 
@@ -378,8 +567,10 @@ export default function RequestAccessModal({
                                         text-slate-500
                                     "
                                 >
-                                    Use the email connected to your
-                                    Spotify account.
+                                    Use the email
+                                    connected to
+                                    your Spotify
+                                    account.
                                 </p>
                             </div>
                         ) : (
@@ -402,12 +593,16 @@ export default function RequestAccessModal({
                                         justify-center
                                         rounded-full
                                         border
-                                        border-cyan-400/20
-                                        bg-cyan-400/10
-                                        text-cyan-300
+                                        border-emerald-400/20
+                                        bg-emerald-400/10
+                                        text-emerald-300
                                     "
                                 >
-                                    <FiCheck size={24} />
+                                    <FiCheck
+                                        size={
+                                            24
+                                        }
+                                    />
                                 </div>
 
                                 <p
@@ -416,10 +611,11 @@ export default function RequestAccessModal({
                                         font-semibold
                                         uppercase
                                         tracking-[0.2em]
-                                        text-cyan-300
+                                        text-emerald-300
                                     "
                                 >
-                                    Request received
+                                    Request
+                                    received
                                 </p>
 
                                 <h2
@@ -431,7 +627,8 @@ export default function RequestAccessModal({
                                         text-slate-100
                                     "
                                 >
-                                    You're on the list.
+                                    You're on
+                                    the list.
                                 </h2>
 
                                 <p
@@ -444,14 +641,23 @@ export default function RequestAccessModal({
                                         text-slate-400
                                     "
                                 >
-                                    Once your Spotify account is
-                                    approved, you'll be able to start
-                                    discovering with Spotinder.
+                                    Once your
+                                    Spotify
+                                    account is
+                                    approved,
+                                    you'll be
+                                    able to
+                                    start
+                                    discovering
+                                    with
+                                    Spotinder.
                                 </p>
 
                                 <button
                                     type="button"
-                                    onClick={handleClose}
+                                    onClick={
+                                        handleClose
+                                    }
                                     className="
                                         mt-8
                                         rounded-full
@@ -464,7 +670,7 @@ export default function RequestAccessModal({
                                         font-medium
                                         text-white
                                         transition
-                                        hover:border-violet-400/30
+                                        hover:border-cyan-400/30
                                         hover:bg-white/10
                                     "
                                 >

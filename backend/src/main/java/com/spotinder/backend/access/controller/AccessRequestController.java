@@ -1,10 +1,12 @@
 package com.spotinder.backend.access.controller;
 
+import com.spotinder.backend.access.dto.AccessRequestCountResponse;
 import com.spotinder.backend.access.dto.CreateAccessRequest;
 import com.spotinder.backend.access.service.AccessRequestService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,5 +22,15 @@ public class AccessRequestController {
             @Valid @RequestBody CreateAccessRequest request
     ) {
         service.requestAccess(request.email());
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<AccessRequestCountResponse> getPendingCount() {
+
+        long pending = service.getPendingCount();
+
+        return ResponseEntity.ok(
+                new AccessRequestCountResponse(pending)
+        );
     }
 }

@@ -4,9 +4,16 @@ import SpotifyButton from "../common/SpotifyButton";
 import AuroraText from "../animations/AuroraText";
 
 
+type FinalCTAProps = {
+    onSpotifyContinue: () => void;
+    disabled?: boolean;
+};
 
 
-export default function FinalCTA() {
+export default function FinalCTA({
+                                     onSpotifyContinue,
+                                     disabled = false,
+                                 }: FinalCTAProps) {
 
     return (
 
@@ -147,7 +154,10 @@ export default function FinalCTA() {
 
                 >
 
-                    <SpotifyButton />
+                    <SpotifyButton
+                        onClick={onSpotifyContinue}
+                        disabled={disabled}
+                    />
 
                 </motion.div>
 

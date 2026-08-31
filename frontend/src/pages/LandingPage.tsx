@@ -125,7 +125,10 @@ export default function LandingPage() {
                     overflow-hidden
                 "
             >
-                <Navbar />
+                <Navbar
+                    onSpotifyContinue={handleSpotifyContinue}
+                    disabled={isLoading || isAuthenticated}
+                />
 
                 {/* Background Glow */}
 
@@ -268,7 +271,10 @@ export default function LandingPage() {
 
             {/* ================= CTA ================= */}
 
-            <FinalCTA />
+            <FinalCTA
+                onSpotifyContinue={handleSpotifyContinue}
+                disabled={isLoading || isAuthenticated}
+            />
 
             {/* ================= FOOTER ================= */}
 

@@ -27,4 +27,10 @@ public class AccessRequestService {
 
         repository.save(request);
     }
+
+    public long getPendingCount() {
+        return repository.countByStatus(
+                AccessRequestStatus.PENDING
+        );
+    }
 }

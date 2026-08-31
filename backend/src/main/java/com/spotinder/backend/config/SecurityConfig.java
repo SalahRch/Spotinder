@@ -36,7 +36,8 @@ public class SecurityConfig {
                                 "/error",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/api/v1/access-requests"
+                                "/api/v1/access-requests",
+                                "/api/v1/access-requests/count"
                         )
                         .permitAll()
                         .anyRequest().authenticated()

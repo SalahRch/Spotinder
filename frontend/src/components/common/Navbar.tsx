@@ -7,7 +7,15 @@ import {
 import Logo from "./Logo";
 import SpotifyButton from "./SpotifyButton";
 
-export default function Navbar() {
+type NavbarProps = {
+    onSpotifyContinue: () => void;
+    disabled?: boolean;
+};
+
+export default function Navbar({
+                                   onSpotifyContinue,
+                                   disabled = false,
+                               }: NavbarProps) {
 
     const { scrollY } = useScroll();
 
@@ -188,7 +196,11 @@ export default function Navbar() {
 
                 <div className="relative z-10">
 
-                    <SpotifyButton small />
+                    <SpotifyButton
+                        small
+                        onClick={onSpotifyContinue}
+                        disabled={disabled}
+                    />
 
                 </div>
 
