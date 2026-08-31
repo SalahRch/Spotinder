@@ -1,11 +1,12 @@
 import api from "@/services/api";
 import type { User } from "../types/user";
 
-const BACKEND_URL = import.meta.env.VITE_API_BASE_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const authService = {
     login() {
-        window.location.href = `${BACKEND_URL}/oauth2/authorization/spotify`;
+        window.location.href =
+            `${BACKEND_URL}/oauth2/authorization/spotify`;
     },
 
     async getCurrentUser(): Promise<User> {
