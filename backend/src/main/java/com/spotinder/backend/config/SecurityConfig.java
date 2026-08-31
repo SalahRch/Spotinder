@@ -1,5 +1,6 @@
 package com.spotinder.backend.config;
 
+import com.spotinder.backend.auth.handler.OAuth2AuthenticationFailureHandler;
 import com.spotinder.backend.auth.handler.OAuth2SuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,9 +14,11 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 public class SecurityConfig {
 
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2AuthenticationFailureHandler failureHandler;
 
-    public SecurityConfig(OAuth2SuccessHandler oAuth2SuccessHandler) {
+    public SecurityConfig(OAuth2SuccessHandler oAuth2SuccessHandler, OAuth2AuthenticationFailureHandler failureHandler) {
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+        this.failureHandler = failureHandler;
     }
 
     @Bean
@@ -32,8 +35,10 @@ public class SecurityConfig {
                                 "/",
                                 "/error",
                                 "/oauth2/**",
-                                "/login/oauth2/**"
-                        ).permitAll()
+                                "/login/oauth2/**",
+                                "/api/v1/access-requests"
+                        )
+                        .permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -45,6 +50,7 @@ public class SecurityConfig {
 
                 .oauth2Login(oauth -> oauth
                         .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(failureHandler)
                 );
 
         return http.build();

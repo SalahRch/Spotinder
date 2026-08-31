@@ -1,4 +1,9 @@
-import { useEffect } from "react";
+import {
+    useEffect,
+    useState,
+} from "react";
+import RequestAccessModal
+    from "@/features/access/components/RequestAccessModal";
 import {
     motion,
     useMotionValue,
@@ -23,9 +28,29 @@ import Footer from "../components/sections/Footer";
 import CursorGlow from "../components/common/CursorGlow";
 
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import toast from "react-hot-toast";
 
 export default function LandingPage() {
     const navigate = useNavigate();
+    const [accessModalOpen, setAccessModalOpen] =
+        useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const authError = params.get("authError");
+
+        if (!authError) return;
+
+        toast.error(
+            "Couldn't connect to Spotify. Make sure your account has access to the Spotinder beta."
+        );
+
+        // Clean ?authError=... from the URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete("authError");
+
+        window.history.replaceState({}, "", url.toString());
+    }, []);
 
     const {
         login,
@@ -153,11 +178,41 @@ export default function LandingPage() {
                             </p>
                         </div>
 
-                        <div className="mt-12">
+                        <div
+                            className="
+        mt-12
+        flex
+        flex-col
+        items-center
+        gap-4
+    "
+                        >
                             <SpotifyButton
                                 onClick={handleSpotifyContinue}
                                 disabled={isLoading || isAuthenticated}
                             />
+
+                            <button
+                                type="button"
+                                onClick={() => setAccessModalOpen(true)}
+                                className="
+            text-sm
+            text-slate-500
+            transition-colors
+            hover:text-violet-300
+        "
+                            >
+                                Don't have access?{" "}
+                                <span
+                                    className="
+                underline
+                decoration-white/20
+                underline-offset-4
+            "
+                                >
+            Request early access
+        </span>
+                            </button>
                         </div>
 
                         <div className="mt-10">
@@ -196,6 +251,10 @@ export default function LandingPage() {
             {/* ================= FOOTER ================= */}
 
             <Footer />
+            <RequestAccessModal
+                open={accessModalOpen}
+                onClose={() => setAccessModalOpen(false)}
+            />
         </main>
     );
 }
