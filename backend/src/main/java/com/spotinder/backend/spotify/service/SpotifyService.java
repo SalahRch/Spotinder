@@ -8,6 +8,7 @@ import com.spotinder.backend.spotify.dto.playlist.CreatePlaylistResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -282,6 +283,8 @@ public class SpotifyService {
     }
 
 
+    private static final int SPOTIFY_TRACK_BATCH_SIZE = 50;
+
     /*
      * =========================================================
      * TRACK LOOKUP BY IDS
@@ -302,41 +305,67 @@ public class SpotifyService {
         String accessToken =
                 spotifyTokenService.getAccessToken();
 
-        String ids =
-                String.join(
-                        ",",
-                        trackIds
-                );
+        List<SpotifyTrackResponse> tracks =
+                new ArrayList<>();
 
-        SpotifyTracksResponse response =
-                restClient.get()
-                        .uri(
-                                "https://api.spotify.com/v1/tracks?ids={ids}",
-                                ids
-                        )
-                        .header(
-                                "Authorization",
-                                "Bearer " + accessToken
-                        )
-                        .retrieve()
-                        .body(
-                                SpotifyTracksResponse.class
-                        );
-
-        if (
-                response == null ||
-                        response.tracks() == null
+        for (
+                int start = 0;
+                start < trackIds.size();
+                start += SPOTIFY_TRACK_BATCH_SIZE
         ) {
-            return List.of();
+
+            int end =
+                    Math.min(
+                            start + SPOTIFY_TRACK_BATCH_SIZE,
+                            trackIds.size()
+                    );
+
+            List<String> batch =
+                    trackIds.subList(
+                            start,
+                            end
+                    );
+
+            String ids =
+                    String.join(
+                            ",",
+                            batch
+                    );
+
+            SpotifyTracksResponse response =
+                    restClient.get()
+                            .uri(
+                                    "https://api.spotify.com/v1/tracks?ids={ids}",
+                                    ids
+                            )
+                            .header(
+                                    "Authorization",
+                                    "Bearer " + accessToken
+                            )
+                            .retrieve()
+                            .body(
+                                    SpotifyTracksResponse.class
+                            );
+
+            if (
+                    response == null ||
+                            response.tracks() == null
+            ) {
+                continue;
+            }
+
+            response.tracks()
+                    .stream()
+                    .filter(track ->
+                            track != null
+                    )
+                    .map(this::toTrackResponse)
+                    .forEach(
+                            tracks::add
+                    );
         }
 
-        return response.tracks()
-                .stream()
-                .filter(track ->
-                        track != null
-                )
-                .map(this::toTrackResponse)
-                .toList();
+        return List.copyOf(tracks);
     }
 
 
@@ -471,6 +500,8 @@ public class SpotifyService {
      * =========================================================
      */
 
+    private static final int SPOTIFY_ARTIST_BATCH_SIZE = 50;
+
     public List<SpotifyArtistResponse> getArtistsByIds(
             List<String> artistIds
     ) {
@@ -485,42 +516,67 @@ public class SpotifyService {
         String accessToken =
                 spotifyTokenService.getAccessToken();
 
-        String ids =
-                String.join(
-                        ",",
-                        artistIds
-                );
+        List<SpotifyArtistResponse> artists =
+                new ArrayList<>();
 
-        SpotifyArtistsResponse response =
-                restClient.get()
-                        .uri(
-                                "https://api.spotify.com/v1/artists?ids={ids}",
-                                ids
-                        )
-                        .header(
-                                "Authorization",
-                                "Bearer " + accessToken
-                        )
-                        .retrieve()
-                        .body(
-                                SpotifyArtistsResponse.class
-                        );
-
-        if (
-                response == null ||
-                        response.artists() == null
+        for (
+                int start = 0;
+                start < artistIds.size();
+                start += SPOTIFY_ARTIST_BATCH_SIZE
         ) {
-            return List.of();
+
+            int end =
+                    Math.min(
+                            start + SPOTIFY_ARTIST_BATCH_SIZE,
+                            artistIds.size()
+                    );
+
+            List<String> batch =
+                    artistIds.subList(
+                            start,
+                            end
+                    );
+
+            String ids =
+                    String.join(
+                            ",",
+                            batch
+                    );
+
+            SpotifyArtistsResponse response =
+                    restClient.get()
+                            .uri(
+                                    "https://api.spotify.com/v1/artists?ids={ids}",
+                                    ids
+                            )
+                            .header(
+                                    "Authorization",
+                                    "Bearer " + accessToken
+                            )
+                            .retrieve()
+                            .body(
+                                    SpotifyArtistsResponse.class
+                            );
+
+            if (
+                    response == null ||
+                            response.artists() == null
+            ) {
+                continue;
+            }
+
+            response.artists()
+                    .stream()
+                    .filter(artist ->
+                            artist != null
+                    )
+                    .forEach(
+                            artists::add
+                    );
         }
 
-        return response.artists()
-                .stream()
-                .filter(artist ->
-                        artist != null
-                )
-                .toList();
+        return List.copyOf(artists);
     }
-
 
     /*
      * =========================================================

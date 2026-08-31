@@ -4,6 +4,8 @@ import {
     useState,
 } from "react";
 
+import DiscoveryLoadingExperience
+    from "../components/DiscoveryLoadingExperience";
 import {AnimatePresence, motion} from "framer-motion";
 import toast from "react-hot-toast";
 import {
@@ -165,7 +167,6 @@ export default function DiscoverPage() {
     );
 
 
-
     const player =
         usePlayer();
 
@@ -238,6 +239,17 @@ export default function DiscoverPage() {
             refetchRecommendations,
     } = useRecommendations();
 
+    const [
+        shouldRunDiscoveryHandoff,
+    ] = useState(
+        () => recommendationsLoading,
+    );
+
+    const [
+        discoveryHandoffFinished,
+        setDiscoveryHandoffFinished,
+    ] = useState(false);
+
     const {
         currentAchievement,
         addAchievements,
@@ -289,41 +301,53 @@ export default function DiscoverPage() {
         }
     };
 
-    if (recommendationsLoading) {
+    useEffect(() => {
+        if (
+            !shouldRunDiscoveryHandoff ||
+            recommendationsLoading ||
+            recommendationsError ||
+            recommendations.length === 0 ||
+            discoveryHandoffFinished
+        ) {
+            return;
+        }
+
+        const timeout =
+            window.setTimeout(() => {
+                setDiscoveryHandoffFinished(true);
+            }, 1100);
+
+        return () => {
+            window.clearTimeout(timeout);
+        };
+    }, [
+        shouldRunDiscoveryHandoff,
+        recommendationsLoading,
+        recommendationsError,
+        recommendations.length,
+        discoveryHandoffFinished,
+    ]);
+
+    const showingDiscoveryHandoff =
+        shouldRunDiscoveryHandoff &&
+        !recommendationsLoading &&
+        !recommendationsError &&
+        recommendations.length > 0 &&
+        !discoveryHandoffFinished;
+
+    if (
+        recommendationsLoading ||
+        showingDiscoveryHandoff
+    ) {
         return (
-            <section
-                className="
-                    relative
-                    flex
-                    min-h-screen
-                    items-center
-                    justify-center
-                    overflow-hidden
-                    bg-[#0B0F17]
-                    text-white
-                "
-            >
-                <AmbientBackground />
-
-                <div className="relative z-10 text-center">
-                    <div
-                        className="
-                            mx-auto
-                            h-10
-                            w-10
-                            animate-spin
-                            rounded-full
-                            border-2
-                            border-white/10
-                            border-t-violet-400
-                        "
-                    />
-
-                    <p className="mt-5 text-sm text-slate-400">
-                        Preparing your discoveries...
-                    </p>
-                </div>
-            </section>
+            <DiscoveryLoadingExperience
+                complete={
+                    showingDiscoveryHandoff
+                }
+                discoveryCount={
+                    recommendations.length
+                }
+            />
         );
     }
 

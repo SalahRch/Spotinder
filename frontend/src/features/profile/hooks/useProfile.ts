@@ -15,6 +15,7 @@ export function useProfile() {
         queryFn: getProfile,
     });
 }
+
 export function useUpdatePreferences() {
     const queryClient =
         useQueryClient();
@@ -34,6 +35,7 @@ export function useUpdatePreferences() {
 
                 queryClient.invalidateQueries({
                     queryKey: ["recommendations"],
+                    refetchType: "all",
                 }),
             ]);
         },
