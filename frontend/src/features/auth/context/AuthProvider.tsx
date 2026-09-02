@@ -34,6 +34,10 @@ export function AuthProvider({
     const logout = useCallback(async () => {
         await authService.logout();
 
+        await queryClient.cancelQueries({
+            queryKey: ["current-user"],
+        });
+
         queryClient.removeQueries({
             queryKey: ["current-user"],
         });
