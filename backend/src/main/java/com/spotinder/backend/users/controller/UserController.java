@@ -1,5 +1,6 @@
 package com.spotinder.backend.users.controller;
 
+import com.spotinder.backend.users.dto.UserGenresRequest;
 import com.spotinder.backend.users.dto.UserPreferencesRequest;
 import com.spotinder.backend.users.dto.UserRequest;
 import com.spotinder.backend.users.dto.UserResponse;
@@ -52,6 +53,17 @@ public class UserController {
     public UserResponse completeOnboarding() {
 
         return userService.completeOnboarding();
+    }
+
+    @PatchMapping("/me/genres")
+    public UserResponse updateGenres(
+            @Valid
+            @RequestBody UserGenresRequest request
+    ) {
+
+        return userService.updateSelectedGenres(
+                request
+        );
     }
 
 }

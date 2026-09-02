@@ -1,5 +1,7 @@
 package com.spotinder.backend.users.entity;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import com.spotinder.backend.common.enums.SpotifyProduct;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -49,6 +51,15 @@ public class User {
 
     @Column(nullable = false)
     private boolean onboardingCompleted = false;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_selected_genres",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "genre", nullable = false)
+    private Set<String> selectedGenres =
+            new LinkedHashSet<>();
 
     @CreationTimestamp
     private Instant createdAt;
@@ -146,6 +157,14 @@ public class User {
 
     public void setBlindModeDefault(boolean blindModeDefault) {
         this.blindModeDefault = blindModeDefault;
+    }
+
+    public Set<String> getSelectedGenres() {
+        return selectedGenres;
+    }
+
+    public void setSelectedGenres(Set<String> selectedGenres) {
+        this.selectedGenres = selectedGenres;
     }
 
     public Instant getCreatedAt() {

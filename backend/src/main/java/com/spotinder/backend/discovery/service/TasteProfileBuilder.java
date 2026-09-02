@@ -115,6 +115,17 @@ public class TasteProfileBuilder {
                         spotifyArtistAffinity
                 );
 
+        if (
+                spotifyGenreAffinity.isEmpty() &&
+                        user.getSelectedGenres() != null &&
+                        !user.getSelectedGenres().isEmpty()
+        ) {
+            spotifyGenreAffinity =
+                    buildSelectedGenreAffinity(
+                            user.getSelectedGenres()
+                    );
+        }
+
         Set<String> topArtistIds =
                 topArtists.stream()
                         .map(
@@ -542,6 +553,24 @@ public class TasteProfileBuilder {
                                 LinkedHashMap::new
                         )
                 );
+    }
+
+    private Map<String, Double>
+    buildSelectedGenreAffinity(
+            Set<String> selectedGenres
+    ) {
+
+        Map<String, Double> affinity =
+                new LinkedHashMap<>();
+
+        for (String genre : selectedGenres) {
+            affinity.put(
+                    genre.toLowerCase(),
+                    1.0
+            );
+        }
+
+        return affinity;
     }
 
 }

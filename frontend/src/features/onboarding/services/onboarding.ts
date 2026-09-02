@@ -14,6 +14,17 @@ export const onboardingService = {
         return data;
     },
 
+    async saveGenres(
+        genres: string[],
+    ): Promise<void> {
+        await api.patch(
+            "/users/me/genres",
+            {
+                genres,
+            },
+        );
+    },
+
     async complete(): Promise<void> {
         await api.post(
             "/users/me/onboarding/complete",

@@ -1,5 +1,7 @@
 package com.spotinder.backend.users.service;
 
+import com.spotinder.backend.users.dto.UserGenresRequest;
+import java.util.LinkedHashSet;
 import com.spotinder.backend.common.exception.ResourceAlreadyExistsException;
 import com.spotinder.backend.common.exception.ResourceNotFoundException;
 import com.spotinder.backend.common.service.CurrentUserService;
@@ -103,6 +105,43 @@ public class UserService {
                 currentUserService.getCurrentUser();
 
         user.setOnboardingCompleted(true);
+
+        User savedUser =
+                userRepository.save(user);
+
+        return toResponse(savedUser);
+    }
+
+    @Transactional
+    public UserResponse updateSelectedGenres(
+            UserGenresRequest request
+    ) {
+
+        User user =
+                currentUserService.getCurrentUser();
+
+        LinkedHashSet<String> genres =
+                request.genres()
+                        .stream()
+                        .map(String::trim)
+                        .filter(
+                                genre ->
+                                        !genre.isBlank()
+                        )
+                        .map(String::toLowerCase)
+                        .collect(
+                                java.util.stream.Collectors.toCollection(
+                                        LinkedHashSet::new
+                                )
+                        );
+
+        if (genres.size() != 3) {
+            throw new IllegalArgumentException(
+                    "Exactly 3 unique genres are required."
+            );
+        }
+
+        user.setSelectedGenres(genres);
 
         User savedUser =
                 userRepository.save(user);

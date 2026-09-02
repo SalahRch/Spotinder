@@ -9,4 +9,5 @@ export type OnboardingProfile = {
     topArtists: string[];
     topTracks: OnboardingTrack[];
     songsAnalyzed: number;
+    needsGenreSelection: boolean;
 };

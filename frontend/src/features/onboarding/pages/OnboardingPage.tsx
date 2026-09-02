@@ -26,11 +26,15 @@ import TasteAnalysis
 import DiscoveryProfile
     from "../components/DiscoveryProfile";
 
+import GenreSelection
+    from "../components/GenreSelection";
+
 import AdventureSetup
     from "../components/AdventureSetup";
 
 type Step =
     | "PROFILE"
+    | "GENRES"
     | "ADVENTURE";
 
 export default function OnboardingPage() {
@@ -75,6 +79,18 @@ export default function OnboardingPage() {
             );
         };
     }, []);
+
+    useEffect(() => {
+        if (!profile) {
+            return;
+        }
+
+        if (
+            profile.needsGenreSelection
+        ) {
+            setStep("GENRES");
+        }
+    }, [profile]);
 
     const showingAnalysis =
         !profile ||
@@ -157,30 +173,30 @@ export default function OnboardingPage() {
                     mode="wait"
                 >
                     {showingAnalysis && (
-                            <motion.div
-                                key="analysis"
-                                initial={{
-                                    opacity: 0,
-                                    y: 20,
-                                }}
-                                animate={{
-                                    opacity: 1,
-                                    y: 0,
-                                }}
-                                exit={{
-                                    opacity: 0,
-                                    y: -20,
-                                }}
-                                transition={{
-                                    duration: 0.45,
-                                }}
-                                className="w-full"
-                            >
-                                <TasteAnalysis
-                                    profile={profile}
-                                />
-                            </motion.div>
-                        )}
+                        <motion.div
+                            key="analysis"
+                            initial={{
+                                opacity: 0,
+                                y: 20,
+                            }}
+                            animate={{
+                                opacity: 1,
+                                y: 0,
+                            }}
+                            exit={{
+                                opacity: 0,
+                                y: -20,
+                            }}
+                            transition={{
+                                duration: 0.45,
+                            }}
+                            className="w-full"
+                        >
+                            <TasteAnalysis
+                                profile={profile}
+                            />
+                        </motion.div>
+                    )}
 
                     {!showingAnalysis &&
                         step === "PROFILE" &&
@@ -209,6 +225,38 @@ export default function OnboardingPage() {
                                         profile
                                     }
                                     onContinue={() =>
+                                        setStep(
+                                            "ADVENTURE",
+                                        )
+                                    }
+                                />
+                            </motion.div>
+                        )}
+
+                    {!showingAnalysis &&
+                        step === "GENRES" &&
+                        profile && (
+                            <motion.div
+                                key="genres"
+                                initial={{
+                                    opacity: 0,
+                                    y: 20,
+                                }}
+                                animate={{
+                                    opacity: 1,
+                                    y: 0,
+                                }}
+                                exit={{
+                                    opacity: 0,
+                                    y: -20,
+                                }}
+                                transition={{
+                                    duration: 0.45,
+                                }}
+                                className="w-full"
+                            >
+                                <GenreSelection
+                                    onComplete={() =>
                                         setStep(
                                             "ADVENTURE",
                                         )

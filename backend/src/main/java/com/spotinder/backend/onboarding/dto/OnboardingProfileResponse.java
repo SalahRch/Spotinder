@@ -8,7 +8,9 @@ public record OnboardingProfileResponse(
 
         List<OnboardingTrackResponse> topTracks,
 
-        int songsAnalyzed
+        int songsAnalyzed,
+
+        boolean needsGenreSelection
 
 ) {
 }

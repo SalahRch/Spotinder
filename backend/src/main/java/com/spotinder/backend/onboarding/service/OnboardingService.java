@@ -1,10 +1,11 @@
 package com.spotinder.backend.onboarding.service;
 
-
 import com.spotinder.backend.onboarding.dto.OnboardingProfileResponse;
 import com.spotinder.backend.onboarding.dto.OnboardingTrackResponse;
 import com.spotinder.backend.spotify.dto.SpotifyTrackResponse;
 import com.spotinder.backend.spotify.service.SpotifyService;
+import com.spotinder.backend.users.entity.User;
+import com.spotinder.backend.common.service.CurrentUserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,13 +17,20 @@ import java.util.stream.Stream;
 public class OnboardingService {
 
     private final SpotifyService spotifyService;
+    private final CurrentUserService currentUserService;
 
-    public OnboardingService(SpotifyService spotifyService) {
+    public OnboardingService(
+            SpotifyService spotifyService,
+            CurrentUserService currentUserService
+    ) {
         this.spotifyService = spotifyService;
+        this.currentUserService = currentUserService;
     }
 
-
     public OnboardingProfileResponse getOnboardingProfile() {
+
+        User user =
+                currentUserService.getCurrentUser();
 
         List<SpotifyTrackResponse> topTracks =
                 spotifyService.getTopTracks();
@@ -100,10 +108,20 @@ public class OnboardingService {
                         )
                         .toList();
 
+        boolean needsGenreSelection =
+                analyzedTracks.isEmpty()
+                        &&
+                        (
+                                user.getSelectedGenres() == null
+                                        ||
+                                        user.getSelectedGenres().isEmpty()
+                        );
+
         return new OnboardingProfileResponse(
                 topArtists,
                 tracks,
-                analyzedTracks.size()
+                analyzedTracks.size(),
+                needsGenreSelection
         );
     }
 }
