@@ -9,6 +9,9 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 
 @Configuration
 public class SecurityConfig {
@@ -22,8 +25,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            OAuth2AuthorizationRequestResolver authorizationRequestResolver
+    ) throws Exception {
 
         http
                 .cors(Customizer.withDefaults())
@@ -50,6 +55,11 @@ public class SecurityConfig {
                 )
 
                 .oauth2Login(oauth -> oauth
+                        .authorizationEndpoint(endpoint ->
+                                endpoint.authorizationRequestResolver(
+                                        authorizationRequestResolver
+                                )
+                        )
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler(failureHandler)
                 )
@@ -67,5 +77,28 @@ public class SecurityConfig {
         );
 
         return http.build();
+    }
+
+    @Bean
+    public OAuth2AuthorizationRequestResolver
+    oauth2AuthorizationRequestResolver(
+            ClientRegistrationRepository clientRegistrationRepository
+    ) {
+        DefaultOAuth2AuthorizationRequestResolver resolver =
+                new DefaultOAuth2AuthorizationRequestResolver(
+                        clientRegistrationRepository,
+                        "/oauth2/authorization"
+                );
+
+        resolver.setAuthorizationRequestCustomizer(
+                builder -> builder.additionalParameters(
+                        params -> params.put(
+                                "show_dialog",
+                                "true"
+                        )
+                )
+        );
+
+        return resolver;
     }
 }
