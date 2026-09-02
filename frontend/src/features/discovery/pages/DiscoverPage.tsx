@@ -45,6 +45,9 @@ const greetingTransition = {
     ],
 };
 
+const MIN_DISCOVERY_LOADING_TIME = 2000;
+const DISCOVERY_HANDOFF_TIME = 1100;
+
 function getGreeting() {
     const hour =
         new Date().getHours();
@@ -63,6 +66,19 @@ function getGreeting() {
 
 export default function DiscoverPage() {
     const { user } = useAuth();
+
+    const [minimumLoadingFinished, setMinimumLoadingFinished] =
+        useState(false);
+
+    useEffect(() => {
+        const timeout = window.setTimeout(() => {
+            setMinimumLoadingFinished(true);
+        }, MIN_DISCOVERY_LOADING_TIME);
+
+        return () => {
+            window.clearTimeout(timeout);
+        };
+    }, []);
 
     const {
         data: dailyDiscovery,
@@ -305,17 +321,17 @@ export default function DiscoverPage() {
         if (
             !shouldRunDiscoveryHandoff ||
             recommendationsLoading ||
+            !minimumLoadingFinished ||
             recommendationsError ||
             recommendations.length === 0 ||
             discoveryHandoffFinished
         ) {
             return;
         }
-
         const timeout =
             window.setTimeout(() => {
                 setDiscoveryHandoffFinished(true);
-            }, 1100);
+            }, DISCOVERY_HANDOFF_TIME);
 
         return () => {
             window.clearTimeout(timeout);
@@ -323,6 +339,7 @@ export default function DiscoverPage() {
     }, [
         shouldRunDiscoveryHandoff,
         recommendationsLoading,
+        minimumLoadingFinished,
         recommendationsError,
         recommendations.length,
         discoveryHandoffFinished,
@@ -337,6 +354,7 @@ export default function DiscoverPage() {
 
     if (
         recommendationsLoading ||
+        !minimumLoadingFinished ||
         showingDiscoveryHandoff
     ) {
         return (

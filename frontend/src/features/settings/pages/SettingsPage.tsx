@@ -5,8 +5,9 @@ import {
     FiMusic,
 } from "react-icons/fi";
 import { motion } from "framer-motion";
-
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import {useState} from "react";
 
 export default function SettingsPage() {
     const {
@@ -14,14 +15,28 @@ export default function SettingsPage() {
         logout,
     } = useAuth();
 
+    const navigate = useNavigate();
+
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
     const handleLogout = async () => {
+        if (isLoggingOut) return;
+
         try {
+            setIsLoggingOut(true);
+
             await logout();
+
+            navigate("/", {
+                replace: true,
+            });
         } catch (error) {
             console.error(
                 "Unable to sign out:",
                 error,
             );
+
+            setIsLoggingOut(false);
         }
     };
 
@@ -398,6 +413,7 @@ export default function SettingsPage() {
 
                             <button
                                 type="button"
+                                disabled={isLoggingOut}
                                 onClick={() => {
                                     void handleLogout();
                                 }}
