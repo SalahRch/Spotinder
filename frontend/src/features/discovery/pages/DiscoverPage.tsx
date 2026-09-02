@@ -23,8 +23,7 @@ import DiscoverySwipeDeck, {
 
 import type { SwipeDirection } from "../components/DiscoverySwipeCard";
 import type { Recommendation } from "../types/discovery";
-import SpotifyEmbedTest
-    from "@/features/player/components/SpotifyEmbedTest";
+
 import { useRecommendations } from "../hooks/useRecommendations";
 import { useRecordSwipe } from "../hooks/useRecordSwipe";
 import {usePlayer} from "@/features/player/context/PlayerContext.ts";
@@ -708,23 +707,6 @@ xl:h-full
                             }
                             onSwipe={handleSwipe}
                         />
-                        {recommendations[0] && (
-                            <div
-                                className="
-            relative
-            z-10
-            mt-6
-            w-full
-            max-w-[460px]
-        "
-                            >
-                                <SpotifyEmbedTest
-                                    trackId={
-                                        recommendations[0].id
-                                    }
-                                />
-                            </div>
-                        )}
                     </div>
 
                     {/* Swipe actions */}

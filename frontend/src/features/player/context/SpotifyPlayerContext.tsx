@@ -6,6 +6,8 @@ import {
     SpotifyPlayerContext,
 } from "./PlayerContext.ts";
 
+import { useAuth } from "@/features/auth/hooks/useAuth";
+
 import type {
     PlaybackSource,
     PlayerTrack,
@@ -27,8 +29,15 @@ type SpotifyPlayerProviderProps = {
 export function SpotifyPlayerProvider({
                                           children,
                                       }: SpotifyPlayerProviderProps) {
+    const { user } = useAuth();
+
+    const hasInAppPlayback =
+        user?.product === "PREMIUM";
+
     const spotifyPlayer =
-        useSpotifyPlayer();
+        useSpotifyPlayer(
+            hasInAppPlayback,
+        );
 
     const [
         currentTrack,
@@ -48,6 +57,16 @@ export function SpotifyPlayerProvider({
         track: PlayerTrack,
         source: PlaybackSource,
     ) => {
+        if (!hasInAppPlayback) {
+            window.open(
+                `https://open.spotify.com/track/${track.id}`,
+                "_blank",
+                "noopener,noreferrer",
+            );
+
+            return;
+        }
+
         if (!spotifyPlayer.deviceId) {
             toast.error(
                 "Spotify player is still connecting.",

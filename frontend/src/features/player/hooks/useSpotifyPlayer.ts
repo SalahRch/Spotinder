@@ -6,7 +6,9 @@ import {
 
 import { getSpotifyPlaybackToken } from "../api/playback";
 
-export function useSpotifyPlayer() {
+export function useSpotifyPlayer(
+    enabled: boolean,
+) {
     const playerRef =
         useRef<SpotifyPlayer | null>(null);
 
@@ -39,6 +41,20 @@ export function useSpotifyPlayer() {
         useState<string | null>(null);
 
     useEffect(() => {
+
+        if (!enabled) {
+            setDeviceId(null);
+            setIsReady(false);
+            setError(null);
+
+            setIsPlaying(false);
+            setPosition(0);
+            setDuration(0);
+            setCurrentTrackId(null);
+
+            return;
+        }
+
         let cancelled = false;
 
         const initializePlayer = () => {
@@ -207,7 +223,7 @@ export function useSpotifyPlayer() {
             playerRef.current?.disconnect();
             playerRef.current = null;
         };
-    }, []);
+    }, [enabled]);
 
     useEffect(() => {
         if (!isPlaying) {
