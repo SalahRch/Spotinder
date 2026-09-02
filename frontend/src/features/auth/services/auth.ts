@@ -15,6 +15,12 @@ export const authService = {
     },
 
     async logout() {
-        await api.post("/logout");
+        await fetch(
+            `${BACKEND_URL}/logout`,
+            {
+                method: "POST",
+                credentials: "include",
+            },
+        );
     },
 };
