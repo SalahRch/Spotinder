@@ -1,6 +1,7 @@
 import {
     useCallback,
     useMemo,
+    useState,
     type ReactNode,
 } from "react";
 
@@ -17,8 +18,10 @@ type AuthProviderProps = {
 export function AuthProvider({
                                  children,
                              }: AuthProviderProps) {
-
     const queryClient = useQueryClient();
+
+    const [signedOut, setSignedOut] =
+        useState(false);
 
     const {
         data: user,
@@ -26,6 +29,8 @@ export function AuthProvider({
     } = useCurrentUser();
 
     const refresh = useCallback(async () => {
+        setSignedOut(false);
+
         await queryClient.invalidateQueries({
             queryKey: ["current-user"],
         });
@@ -33,6 +38,8 @@ export function AuthProvider({
 
     const logout = useCallback(async () => {
         await authService.logout();
+
+        setSignedOut(true);
 
         await queryClient.cancelQueries({
             queryKey: ["current-user"],
@@ -43,17 +50,23 @@ export function AuthProvider({
         });
     }, [queryClient]);
 
+    const effectiveUser =
+        signedOut ? undefined : user;
+
     const value = useMemo(
         () => ({
-            user,
-            isAuthenticated: Boolean(user),
-            isLoading,
+            user: effectiveUser,
+            isAuthenticated:
+                Boolean(effectiveUser),
+            isLoading:
+                !signedOut && isLoading,
             login: authService.login,
             logout,
             refresh,
         }),
         [
-            user,
+            effectiveUser,
+            signedOut,
             isLoading,
             logout,
             refresh,
