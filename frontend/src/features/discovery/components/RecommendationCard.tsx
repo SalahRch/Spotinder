@@ -13,6 +13,8 @@ type RecommendationCardProps = {
     blindMode?: boolean;
     backgroundCard?: boolean;
 
+    hasInAppPlayback?: boolean;
+
     onPlay?: (
         recommendation: Recommendation,
     ) => Promise<void> | void;
@@ -48,6 +50,8 @@ export default function RecommendationCard({
                                                recommendation,
                                                blindMode = false,
                                                backgroundCard = false,
+
+                                               hasInAppPlayback = false,
 
                                                onPlay,
 
@@ -253,9 +257,18 @@ export default function RecommendationCard({
                     <motion.button
                         type="button"
                         aria-label={
-                            isThisTrackPlaying
-                                ? `Pause ${title}`
-                                : `Play ${title}`
+                            !hasInAppPlayback
+                                ? `Open ${title} in Spotify`
+                                : isThisTrackPlaying
+                                    ? `Pause ${title}`
+                                    : `Play ${title}`
+                        }
+                        title={
+                            hasInAppPlayback
+                                ? isThisTrackPlaying
+                                    ? "Pause in Spotinder"
+                                    : "Play in Spotinder"
+                                : "Opens in Spotify · Premium enables in-app playback"
                         }
                         onClick={(event) => {
                             event.stopPropagation();

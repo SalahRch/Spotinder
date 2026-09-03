@@ -174,6 +174,33 @@ export default function DiscoverPage() {
     const adventureExpanded =
         adventureHovered;
 
+    const isPremium =
+        user?.product?.toLowerCase() ===
+        "premium";
+
+    const [
+        showPremiumNotice,
+        setShowPremiumNotice,
+    ] = useState(() => {
+        if (isPremium) {
+            return false;
+        }
+
+        return (
+            localStorage.getItem(
+                "spotinder-premium-notice-seen",
+            ) !== "true"
+        );
+    });
+
+    const dismissPremiumNotice = () => {
+        localStorage.setItem(
+            "spotinder-premium-notice-seen",
+            "true",
+        );
+
+        setShowPremiumNotice(false);
+    };
 
     const [
         blindMode,
@@ -433,6 +460,66 @@ export default function DiscoverPage() {
         xl:min-h-0
             "
         >
+            {showPremiumNotice && (
+                <div
+                    className="
+            absolute
+            left-1/2
+            top-4
+            z-50
+            w-[calc(100%-2rem)]
+            max-w-xl
+            -translate-x-1/2
+        "
+                >
+                    <div
+                        className="
+                flex
+                items-start
+                justify-between
+                gap-4
+                rounded-2xl
+                border
+                border-violet-400/15
+                bg-[#111827]/95
+                px-5
+                py-4
+                shadow-[0_20px_60px_rgba(0,0,0,0.35)]
+                backdrop-blur-xl
+            "
+                    >
+                        <div>
+                            <p className="text-sm font-medium text-slate-100">
+                                Get the full Spotinder experience 🎧
+                            </p>
+
+                            <p className="mt-1 text-xs leading-5 text-slate-400">
+                                Spotify Premium lets tracks play directly inside Spotinder.
+                                You can still discover, swipe and save songs with your
+                                current account.
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={dismissPremiumNotice}
+                            className="
+                    shrink-0
+                    rounded-lg
+                    px-2
+                    py-1
+                    text-xs
+                    text-slate-400
+                    transition
+                    hover:bg-white/5
+                    hover:text-white
+                "
+                        >
+                            Got it
+                        </button>
+                    </div>
+                </div>
+            )}
             <AmbientBackground />
 
             <div
@@ -692,6 +779,7 @@ xl:h-full
                             ref={swipeDeckRef}
                             recommendations={recommendations}
                             blindMode={blindMode}
+                            hasInAppPlayback={isPremium}
                             onPlay={handleTogglePlayback}
                             currentTrackId={
                                 player.currentTrack?.id ?? null

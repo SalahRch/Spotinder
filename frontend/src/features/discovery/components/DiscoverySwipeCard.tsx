@@ -29,12 +29,13 @@ export type DiscoverySwipeCardHandle = {
         direction: SwipeDirection,
     ) => Promise<void>;
 };
-
 type DiscoverySwipeCardProps = {
     recommendation: Recommendation;
     draggable?: boolean;
     blindMode?: boolean;
     backgroundCard?: boolean;
+
+    hasInAppPlayback?: boolean;
 
     onPlay?: (
         recommendation: Recommendation,
@@ -48,7 +49,6 @@ type DiscoverySwipeCardProps = {
     onDragProgress?: (
         progress: number,
     ) => void;
-
 
     onSwiped?: (
         direction: SwipeDirection,
@@ -68,6 +68,8 @@ const DiscoverySwipeCard = forwardRef<
         draggable = false,
         blindMode = false,
         backgroundCard = false,
+
+        hasInAppPlayback = false,
 
         onPlay,
 
@@ -491,6 +493,7 @@ const DiscoverySwipeCard = forwardRef<
                         recommendation={recommendation}
                         blindMode={effectiveBlindMode}
                         backgroundCard={backgroundCard}
+                        hasInAppPlayback={hasInAppPlayback}
                         onPlay={onPlay}
                         currentTrackId={currentTrackId}
                         isPlaying={isPlaying}
@@ -503,6 +506,7 @@ const DiscoverySwipeCard = forwardRef<
                     recommendation={recommendation}
                     blindMode={effectiveBlindMode}
                     backgroundCard={backgroundCard}
+                    hasInAppPlayback={hasInAppPlayback}
                     onPlay={onPlay}
                     currentTrackId={currentTrackId}
                     isPlaying={isPlaying}

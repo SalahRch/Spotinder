@@ -31,6 +31,8 @@ type DiscoverySwipeDeckProps = {
     recommendations: Recommendation[];
     blindMode?: boolean;
 
+    hasInAppPlayback?: boolean;
+
     onPlay?: (
         recommendation: Recommendation,
     ) => Promise<void> | void;
@@ -55,22 +57,25 @@ const LEGACY_DISCOVERY_INDEX_KEY =
 const DiscoverySwipeDeck = forwardRef<
     DiscoverySwipeDeckHandle,
     DiscoverySwipeDeckProps
->(function DiscoverySwipeDeck(
-    {
-        recommendations,
-        blindMode = false,
+>(
+    function DiscoverySwipeDeck(
+        {
+            recommendations,
+            blindMode = false,
 
-        onPlay,
+            hasInAppPlayback = false,
 
-        currentTrackId = null,
-        isPlaying = false,
-        position = 0,
-        duration = 0,
+            onPlay,
 
-        onSwipe,
-    },
-    ref,
-) {
+            currentTrackId = null,
+            isPlaying = false,
+            position = 0,
+            duration = 0,
+
+            onSwipe,
+        },
+        ref,
+    ) {
     const [index, setIndex] =
         useState(() => {
             /*
@@ -437,6 +442,9 @@ const DiscoverySwipeDeck = forwardRef<
                     }
                     blindMode={
                         blindMode
+                    }
+                    hasInAppPlayback={
+                        hasInAppPlayback
                     }
                     draggable
                     onPlay={
