@@ -1,351 +1,138 @@
-# 📄 Architecture
+# Architecture
 
-# Spotinder
+## High-Level Architecture
 
-This document describes the high-level architecture of Spotinder, the technologies used, and the design principles that guide the implementation.
-
----
-
-# 🏗️ High-Level Architecture
-
-```text
-                +----------------------+
-                |      Next.js App     |
-                |     (Frontend)       |
-                +----------+-----------+
-                           |
-                      REST API (HTTPS)
-                           |
-                           ▼
-                +----------------------+
-                |    Spring Boot API   |
-                |      (Backend)       |
-                +----------+-----------+
-                           |
-              +------------+------------+
-              |                         |
-              ▼                         ▼
-      PostgreSQL Database       Spotify Web API
-                                        |
-                                        ▼
-                               Music Catalog
-                               User Library
-                               Playlists
-                               Recommendations
-
-                    (Future)
-
-                +----------------------+
-                |      AI Service       |
-                |      (Python)         |
-                +----------------------+
+``` text
+                         +------------------+
+                         | Spotify Accounts |
+                         +---------+--------+
+                                   |
+                                OAuth 2.0
+                                   |
+                                   v
++------------------+      +-------+--------+       +------------------+
+| React + Vite     | ---> | Spring Boot    | ----> | Spotify Web API  |
+| Vercel           | REST | Railway        |       |                  |
++------------------+ <--- +-------+--------+       +------------------+
+                                   |
+                                   v
+                         +---------+---------+
+                         | PostgreSQL        |
+                         | Supabase          |
+                         +-------------------+
 ```
 
----
+## Frontend
 
-# 🎯 Architecture Goals
+The current frontend is a React/Vite single-page application.
 
-Spotinder is designed around the following goals:
+### Stack
 
-- Keep the MVP simple and maintainable.
-- Build features around business domains.
-- Separate concerns between frontend and backend.
-- Keep the architecture flexible for future expansion.
-- Favor readability over unnecessary abstraction.
+-   React 19
+-   TypeScript
+-   Vite
+-   Tailwind CSS
+-   React Router
+-   TanStack Query
+-   Axios
+-   Framer Motion
+-   React Hot Toast
 
----
+### Organization
 
-# 🧩 Why a Modular Monolith?
+The frontend follows a feature-oriented structure. Major feature areas
+include authentication, access, onboarding, discovery, likes, insights,
+playlists, achievements, profile, settings, and player functionality.
 
-The first version of Spotinder will be implemented as a **modular monolith**.
+Shared application infrastructure lives under `app`, common UI under
+`components`, and the Axios API client under `services`.
 
-Instead of splitting the application into multiple microservices, all business domains live inside a single Spring Boot application while remaining logically separated.
+## Backend
 
-This approach provides:
+The backend is a Java 21 Spring Boot modular monolith.
 
-- Faster development
-- Easier debugging
-- Simpler deployment
-- Lower infrastructure complexity
-- Better developer experience
+### Why a modular monolith?
 
-As the application grows, individual modules can later be extracted into dedicated services if needed.
+The application has several clear business domains, but the MVP does not
+need the deployment and operational complexity of microservices. A
+modular monolith provides domain separation while keeping local
+development, debugging, transactions, and deployment simple.
 
----
+### Current domains
 
-# 🖥️ Frontend Architecture
-
-The frontend is responsible for:
-
-- Authentication flow
-- Music discovery experience
-- Swipe interactions
-- Playlist management
-- User insights
-- Application settings
-
-### Technology Stack
-
-- Next.js
-- TypeScript
-- Tailwind CSS
-- TanStack Query
-- Axios
-- Framer Motion
-
----
-
-## Suggested Structure
-
-```text
-frontend/
-
-app/
-
-components/
-
-features/
-
-hooks/
-
-lib/
-
-types/
-
-public/
+``` text
+access
+achievements
+auth
+common
+discovery
+insights
+likes
+onboarding
+playlists
+spotify
+swipes
+users
 ```
 
-The frontend follows a **feature-first** organization.
+## Discovery Architecture
 
-Reusable UI components remain independent from business logic.
+Discovery is implemented as a pipeline rather than one large
+recommendation method:
 
----
-
-# ⚙️ Backend Architecture
-
-The backend exposes a REST API consumed by the frontend.
-
-Its responsibilities include:
-
-- Spotify authentication
-- User management
-- Recommendation engine
-- Swipe management
-- Playlist generation
-- Insights calculation
-
-### Technology Stack
-
-- Java 21
-- Spring Boot
-- Spring Security
-- Spring OAuth2 Client
-- Spring Data JPA
-- PostgreSQL
-- MapStruct
-- Lombok
-- Swagger (OpenAPI)
-
----
-
-## Backend Modules
-
-The backend is organized around business domains.
-
-```text
-backend/
-
-auth/
-
-users/
-
-spotify/
-
-discovery/
-
-swipes/
-
-playlists/
-
-insights/
-
-common/
+``` text
+CurrentUserService
+      |
+TasteProfileBuilder
+      |
+GenreTasteClassifier
+      |
+GenreExplorationService
+      |
+ExplorationPlanner
+      |
+DiscoveryCandidateGenerator
+      |
+RecommendationEngine.rank
+      |
+RecommendationEngine.compose
+      |
+SongResponse
 ```
 
-Each module contains its own:
+This separation allows the system to independently evolve taste
+modeling, exploration strategy, candidate retrieval, scoring, and final
+deck diversity.
 
-- Controller
-- Service
-- Repository
-- DTOs
-- Entities (when applicable)
+## Authentication
 
----
+Spring Security and Spotify OAuth2 Client manage authentication.
 
-# 🗄️ Database
+Spotinder uses a server-side authenticated session. The frontend sends
+credentials with API requests. Production cookies are configured as
+secure, HTTP-only, and `SameSite=None` to support the separately hosted
+frontend/backend.
 
-Spotinder uses PostgreSQL as its primary database.
+## Data Ownership
 
-The database stores only application-specific data.
+PostgreSQL stores application-specific state such as users, preferences,
+swipes, discovery sessions, playlists, access requests, and
+achievements.
 
-Music metadata remains managed by Spotify.
+Spotify remains the source of truth for catalog and Spotify-owned data.
 
-Examples of stored data include:
+## Playback Architecture
 
-- Users
-- Swipe history
-- User preferences
-- Discovery settings
-- Generated playlists
-- Analytics
+Premium playback uses the Spotify Web Playback SDK plus backend Spotify
+playback endpoints.
 
----
+For Free users, the SDK is intentionally not initialized. The shared
+player context opens the exact Spotify track externally instead. This
+keeps playback behavior centralized across the application.
 
-# 🎵 Spotify Integration
+## Deployment
 
-Spotify remains the source of truth for:
-
-- User authentication
-- User profile
-- Music catalog
-- Artist information
-- Albums
-- Playlist creation
-- Audio features
-
-Spotinder stores only the information necessary to personalize the discovery experience.
-
----
-
-# 🔒 Authentication
-
-Authentication is handled through Spotify OAuth 2.0.
-
-The application does **not** manage passwords or local accounts.
-
-Authentication flow:
-
-```text
-User
-
-↓
-
-Spotify Login
-
-↓
-
-Spotify Authorization
-
-↓
-
-Spotinder Backend
-
-↓
-
-JWT Session
-
-↓
-
-Frontend
-```
-
----
-
-# 🔮 Future AI Service
-
-Artificial Intelligence will be introduced in a later phase as a separate service.
-
-Responsibilities:
-
-- Mood-based playlist generation
-- Natural language recommendations
-- Personalized discovery
-- Listening habit analysis
-
-Keeping AI isolated allows independent development without impacting the core application.
-
----
-
-# 🎨 Design Principles
-
-Every technical decision should respect these principles.
-
-## Feature First
-
-Organize code by business domain rather than technical layers.
-
----
-
-## Simplicity First
-
-Avoid unnecessary abstractions.
-
-Build only what is required.
-
----
-
-## Clean Separation
-
-Frontend handles presentation.
-
-Backend handles business logic.
-
-Spotify handles music data.
-
----
-
-## Scalability
-
-The architecture should allow future expansion without major rewrites.
-
----
-
-## User Experience First
-
-Technical decisions should always support a better user experience.
-
----
-
-# 🚀 Deployment
-
-The application will be fully containerized using Docker.
-
-Development environment:
-
-```text
-Frontend
-        │
-Backend
-        │
-PostgreSQL
-```
-
-Production deployment will later include:
-
-- Docker Compose
-- Reverse Proxy
-- HTTPS
-- CI/CD
-- Cloud Hosting
-
----
-
-# 📈 Future Evolution
-
-As Spotinder grows, the architecture can evolve to include:
-
-- AI Service
-- Recommendation Service
-- Analytics Service
-- Notification Service
-- Caching Layer (Redis)
-
-These services are intentionally excluded from the MVP to keep the initial implementation simple.
-
----
-
-# 💡 Guiding Principle
-
-> **Build a product first. Optimize the architecture second.**
-
-The architecture should serve the product—not the other way around.
+-   Frontend: Vercel
+-   Backend: Railway
+-   Database: Supabase PostgreSQL
+-   Local/container development: Docker / Docker Compose

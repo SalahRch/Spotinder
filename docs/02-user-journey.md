@@ -1,296 +1,107 @@
-# 📄 User Journey
+# User Journey
 
-# Spotinder
+## Overview
 
-This document describes the complete user journey from opening Spotinder for the first time to discovering music, creating playlists, and viewing insights.
+``` text
+Landing
+  |
+  v
+Spotify OAuth
+  |
+  v
+Analyze listening data
+  |
+  +-------------------------------+
+  |                               |
+Enough Spotify history       Little/no history
+  |                               |
+  v                               v
+Discovery Profile            Choose 3 Genres
+  |                               |
+  +---------------+---------------+
+                  |
+                  v
+            Adventure Mode
+                  |
+                  v
+               Discover
+          /        |        \
+       Pass       Like      Playback
+                   |
+                   v
+                 Likes
+                   |
+                   v
+          Create Spotify Playlist
 
----
-
-# 🎯 Journey Overview
-
-```text
-Landing Page
-      │
-      ▼
-Spotify Login
-      │
-      ▼
-Analyzing Spotify Library
-      │
-      ▼
-Discovery Profile
-      │
-      ▼
-Adventure Mode Setup
-      │
-      ▼
-Home
-      │
-      ├────────► Song Details
-      │
-      ├────────► Like Song
-      │
-      ├────────► Pass Song
-      │
-      ▼
-Liked Songs
-      │
-      ▼
-Create Playlist
-      │
-      ▼
-Insights
-      │
-      ▼
-Profile
+Additional areas:
+Insights | Journeys | Achievements | Profile
 ```
 
----
+## 1. Landing and Access
 
-# 1. Landing Page
+The landing page explains the product and demonstrates the swipe
+interaction. During Spotify Development Mode, users who are not yet
+allowlisted can submit an early-access request.
 
-## Goal
+## 2. Spotify Authentication
 
-Introduce Spotinder and encourage users to sign in.
+Authentication is delegated to Spotify OAuth. Spotinder does not manage
+passwords.
 
-## UI
+After successful authentication, the backend can access the Spotify
+scopes required for profile data, top listening data, recently played
+tracks, playlist operations, and playback features.
 
-- Spotinder logo
-- Tagline
-- Animated phone mockup
-- Floating blurred album covers
-- Subtle animated audio waveform
-- **Animated Hero** showcasing the core interaction:
-    - A new song card appears every 2–3 seconds
-    - Album artwork changes
-    - Song title and artist update
-    - Automatic swipe animation (Like / Pass)
-    - Infinite loop demonstrating the discovery experience
-- Continue with Spotify button
+## 3. Taste Initialization
 
-### First Impression
+Spotinder first tries to infer taste from Spotify.
 
-The landing page should communicate Spotinder's purpose within the first 5 seconds.
+For established accounts, top artists and top tracks form the initial
+profile.
 
-The user should immediately understand:
+For accounts without sufficient listening history, onboarding asks the
+user to select exactly three genres. These selections bootstrap the same
+discovery pipeline instead of blocking the user.
 
-- This is a music discovery platform.
-- Spotify integration is seamless.
-- Swiping is the primary interaction.
-- The experience feels modern, playful, and premium.
+## 4. Adventure Mode
 
-## Actions
+Adventure Mode is a value from conservative to exploratory. It affects
+the *composition of the musical territory Spotinder explores*, rather
+than simply adding a random bonus to a track score.
 
-- Continue with Spotify
+Lower values favor established/anchor genres. Higher values allocate
+more of the discovery plan to nearby and frontier genres.
 
----
+## 5. Discover
 
-# 2. Spotify Authentication
+The Discover page is the core interaction.
 
-User authenticates using Spotify OAuth.
+Users can: - play/open the current track; - swipe right to Like; - swipe
+left to Pass; - enable Blind Discovery; - adjust discovery preferences.
 
-No account creation.
+Every swipe becomes new behavioral evidence for future discovery.
 
-No password.
+## 6. Playback
 
-After authentication, Spotinder retrieves:
+Premium Spotify accounts receive integrated playback inside Spotinder.
 
-- Spotify profile
-- Top artists
-- Top tracks
-- Recently played songs
-- User playlists
+For Free accounts, pressing the same play control opens the exact track
+on Spotify. The rest of the discovery experience remains available.
 
----
+## 7. Likes and Playlists
 
-# 3. Discovery Profile
+Liked tracks are collected in the Likes experience. Users can use their
+discoveries to create a Spotify playlist through Spotinder.
 
-Instead of asking users what they like, Spotinder analyzes their Spotify account.
+## 8. Insights, Journeys and Achievements
 
-Display:
+Spotinder turns discovery history into a broader experience: - Insights
+summarize listening/discovery behavior. - Journeys represent discovery
+sessions and their musical identity. - Achievements reward milestones
+and exploration behavior.
 
-- Top Genres
-- Top Artists
-- Songs analyzed
-- Listening summary
+## 9. Profile
 
-Example:
-
-🎸 Alternative Rock
-
-🎤 Arctic Monkeys
-
-🎧 1,247 songs analyzed
-
----
-
-# 4. Adventure Mode
-
-The only onboarding interaction.
-
-Question:
-
-> How adventurous do you want your recommendations to be?
-
-Slider:
-
-```text
-Comfort Zone ●━━━━━━━━━━ Explore Everything
-```
-
-This preference influences recommendation diversity.
-
----
-
-# 5. Home
-
-The primary screen of the application.
-
-## Contains
-
-- Greeting
-- Daily recommendation
-- Swipe card
-- Progress indicator
-- Bottom navigation
-
-## Actions
-
-- Like
-- Pass
-- Open song details
-- Open artist
-- Open Spotify
-
----
-
-# 6. Song Details
-
-Sliding drawer.
-
-Contains:
-
-- Album artwork
-- Song
-- Artist
-- Album
-- Genre
-- Popularity
-- Preview
-- Open in Spotify
-
----
-
-# 7. Blind Discovery
-
-Optional mode.
-
-When enabled:
-
-Hide
-
-- Artist
-- Album
-- Popularity
-
-Reveal only after the swipe.
-
-Purpose:
-
-Encourage unbiased music discovery.
-
----
-
-# 8. Liked Songs
-
-Displays every liked song.
-
-Users can:
-
-- Search
-- Sort
-- Remove songs
-- Open in Spotify
-
----
-
-# 9. Playlist Generation
-
-Once enough songs are liked:
-
-Spotinder suggests:
-
-> Ready to build your playlist?
-
-Users can:
-
-- Name playlist
-- Generate playlist
-- Open playlist in Spotify
-
----
-
-# 10. Insights
-
-Displays listening analytics.
-
-Examples:
-
-- Favorite genres
-- Favorite artists
-- Discovery score
-- Listening personality
-- Total swipes
-- Like / Pass ratio
-- Average song popularity
-- Average song energy
-
----
-
-# 11. Profile
-
-Displays:
-
-- Spotify profile
-- Connected account
-- Discovery settings
-- Adventure Mode preference
-- Statistics
-
----
-
-# Navigation
-
-```text
-🏠 Home
-
-❤️ Likes
-
-📊 Insights
-
-👤 Profile
-```
-
-AI will be added later as a separate page.
-
----
-
-# Future Journey
-
-Version 2 introduces:
-
-- Daily Discovery
-- AI Playlist Generator
-- AI Discovery Assistant
-- Smart Mixes
-- Mood-based recommendations
-
----
-
-# Design Philosophy
-
-Every interaction should answer one question:
-
-> "How quickly can we help the user discover a song they'll love?"
-
-Anything that slows down discovery should be simplified or removed.
+The profile exposes the connected Spotify identity, preferences,
+discovery settings, and related user information.

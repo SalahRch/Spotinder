@@ -1,350 +1,125 @@
-# 📄 API Design
+# REST API
 
-# Spotinder
+Base path for application endpoints:
 
-This document defines the REST API exposed by Spotinder.
-
-The API is designed around the user journey rather than CRUD operations.
-
----
-
-# 🌐 Base URL
-
-```
+``` text
 /api/v1
 ```
 
----
+Authentication itself is initiated through Spring Security's Spotify
+OAuth2 authorization route.
 
-# 🎯 API Principles
+## Access
 
-The API follows these principles:
+  Method   Endpoint                          Purpose
+  -------- --------------------------------- --------------------------------
+  POST     `/api/v1/access-requests`         Submit an early-access request
+  GET      `/api/v1/access-requests/count`   Read access-request count
 
-- RESTful endpoints
-- Resource-oriented design
-- JSON communication
-- Stateless authentication
-- Consistent response format
-- Clear error messages
+## Users
 
----
+  ----------------------------------------------------------------------------------------
+  Method                  Endpoint                                 Purpose
+  ----------------------- ---------------------------------------- -----------------------
+  POST                    `/api/v1/users`                          User operation exposed
+                                                                   by the current
+                                                                   controller
 
-# 🔐 Authentication
+  GET                     `/api/v1/users/me`                       Current authenticated
+                                                                   user
 
-Authentication is handled through Spotify OAuth 2.0.
+  PATCH                   `/api/v1/users/me/preferences`           Update discovery
+                                                                   preferences
 
-The frontend authenticates the user using Spotify.
+  PATCH                   `/api/v1/users/me/genres`                Save selected
+                                                                   onboarding genres
 
-The backend exchanges the authorization code for Spotify access and refresh tokens.
+  POST                    `/api/v1/users/me/onboarding/complete`   Mark onboarding
+                                                                   complete
+  ----------------------------------------------------------------------------------------
 
-After successful authentication, Spotinder creates its own authenticated session.
+## Onboarding
 
----
+  ------------------------------------------------------------------------------
+  Method                  Endpoint                       Purpose
+  ----------------------- ------------------------------ -----------------------
+  GET                     `/api/v1/onboarding/profile`   Build
+                                                         onboarding/discovery
+                                                         profile
 
-# 📚 Endpoints
+  ------------------------------------------------------------------------------
 
----
+## Discovery
 
-# Authentication
+  Method   Endpoint                         Purpose
+  -------- -------------------------------- -----------------------------
+  GET      `/api/v1/discover`               Generate the discovery deck
+  GET      `/api/v1/discover/daily`         Daily discovery
+  GET      `/api/v1/discover/daily/recap`   Daily discovery recap
 
-## Login
+## Journeys
 
-```http
-GET /auth/login
-```
+  Method   Endpoint                         Purpose
+  -------- -------------------------------- -------------------------
+  GET      `/api/v1/journeys`               List discovery journeys
+  GET      `/api/v1/journeys/{journeyId}`   Journey details
 
-Redirects the user to Spotify's OAuth page.
+## Swipes
 
----
+  Method   Endpoint           Purpose
+  -------- ------------------ ---------------------
+  POST     `/api/v1/swipes`   Persist Like / Pass
 
-## Callback
+## Likes
 
-```http
-GET /auth/callback
-```
+  Method   Endpoint          Purpose
+  -------- ----------------- -----------------------
+  GET      `/api/v1/likes`   Retrieve liked tracks
 
-Receives Spotify's authorization code and creates a user session.
+## Playlists
 
----
+  -----------------------------------------------------------------------
+  Method                  Endpoint                Purpose
+  ----------------------- ----------------------- -----------------------
+  POST                    `/api/v1/playlists`     Create a Spotify
+                                                  playlist from Spotinder
 
-## Logout
+  -----------------------------------------------------------------------
 
-```http
-POST /auth/logout
-```
+## Insights
 
-Terminates the current session.
+  Method   Endpoint             Purpose
+  -------- -------------------- ---------------------------------------
+  GET      `/api/v1/insights`   Retrieve discovery/listening insights
 
----
+## Achievements
 
-# User
+  Method   Endpoint                 Purpose
+  -------- ------------------------ ----------------------------
+  GET      `/api/v1/achievements`   Retrieve achievement state
 
-## Current User
+## Spotify Integration
 
-```http
-GET /me
-```
+  ----------------------------------------------------------------------------------
+  Method                  Endpoint                           Purpose
+  ----------------------- ---------------------------------- -----------------------
+  GET                     `/api/v1/spotify/playback-token`   Token used by
+                                                             integrated playback
 
-Returns the authenticated user.
+  POST                    `/api/v1/spotify/play`             Start a track on the
+                                                             Spotinder Spotify
+                                                             device
 
-Example Response
+  GET                     `/api/v1/spotify/top-artists`      Spotify top artists
 
-```json
-{
-  "displayName": "John Doe",
-  "country": "MA",
-  "adventureLevel": 70,
-  "blindModeDefault": false
-}
-```
+  GET                     `/api/v1/spotify/search-artists`   Artist search
+  ----------------------------------------------------------------------------------
 
----
+## Authentication Notes
 
-## Update Preferences
+The frontend uses a credentialed session with the backend. Spotify OAuth
+is handled by Spring Security rather than by a custom
+`/api/v1/auth/login` endpoint.
 
-```http
-PATCH /me/preferences
-```
-
-Updates:
-
-- Adventure Mode
-- Blind Mode
-
----
-
-# Discovery
-
-## Get Recommendations
-
-```http
-GET /discover
-```
-
-Returns the next batch of recommended songs.
-
-Optional query parameters:
-
-```text
-limit=20
-
-blind=true
-```
-
-Example Response
-
-```json
-[
-  {
-    "spotifyTrackId": "...",
-    "title": "...",
-    "artist": "...",
-    "albumImage": "..."
-  }
-]
-```
-
----
-
-# Swipes
-
-## Like / Pass Song
-
-```http
-POST /swipes
-```
-
-Example Request
-
-```json
-{
-  "spotifyTrackId": "...",
-  "direction": "LIKE"
-}
-```
-
-Possible values:
-
-- LIKE
-- PASS
-
----
-
-## Swipe History
-
-```http
-GET /swipes
-```
-
-Returns the user's swipe history.
-
----
-
-# Playlists
-
-## Generate Playlist
-
-```http
-POST /playlists
-```
-
-Creates a Spotify playlist from liked songs.
-
-Example Request
-
-```json
-{
-  "name": "Late Night Vibes"
-}
-```
-
----
-
-## User Playlists
-
-```http
-GET /playlists
-```
-
-Returns playlists generated through Spotinder.
-
----
-
-# Insights
-
-## Listening Insights
-
-```http
-GET /insights
-```
-
-Returns analytics for the authenticated user.
-
-Example Response
-
-```json
-{
-  "songsLiked": 241,
-  "songsPassed": 93,
-  "favoriteGenre": "Alternative Rock",
-  "favoriteArtist": "Arctic Monkeys",
-  "discoveryScore": 82
-}
-```
-
----
-
-# Sessions
-
-## Discovery Sessions
-
-```http
-GET /sessions
-```
-
-Returns previous discovery sessions.
-
----
-
-# Health
-
-```http
-GET /health
-```
-
-Returns application health status.
-
----
-
-# Response Format
-
-Successful responses:
-
-```json
-{
-  "data": {}
-}
-```
-
-Collections:
-
-```json
-{
-  "data": []
-}
-```
-
-Errors:
-
-```json
-{
-  "timestamp": "...",
-  "status": 404,
-  "error": "Not Found",
-  "message": "...",
-  "path": "/..."
-}
-```
-
----
-
-# HTTP Status Codes
-
-| Status | Meaning |
-|---------|----------|
-| 200 | Success |
-| 201 | Resource Created |
-| 204 | No Content |
-| 400 | Bad Request |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 404 | Not Found |
-| 500 | Internal Server Error |
-
----
-
-# API Versioning
-
-The API is versioned through the URL.
-
-Example
-
-```
-/api/v1
-```
-
-Future versions may introduce:
-
-```
-/api/v2
-```
-
-without breaking existing clients.
-
----
-
-# Future Endpoints
-
-These endpoints are planned for later releases:
-
-```http
-GET /discover/daily
-
-POST /playlists/ai
-
-POST /chat
-
-GET /achievements
-
-GET /stats
-
-GET /friends
-```
-
----
-
-# 💡 Design Philosophy
-
-The API exists to power the user experience.
-
-Endpoints are designed around user actions rather than direct database operations.
+Production cross-site session cookies are configured as secure,
+HTTP-only, and `SameSite=None`.
