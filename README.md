@@ -47,37 +47,37 @@ playback integration.
 
 | Welcome                      | Profile analytics            | Adventure Mode               |
 |------------------------------|------------------------------|------------------------------|
-| ![](assets/onboarding 1.png) | ![](assets/onboarding 2.png) | ![](assets/onboarding 3.png) |
+| ![](assets/Onboarding-1.png) | ![](assets/Onboarding-2.png) | ![](assets/Onboarding-3.png) |
 
 ### Discovery
 
 | Loading Discovery                | Swipe Experience         |
 |----------------------------------|--------------------------|
-| ![](assets/discover loading.png) | ![](assets/discover.png) |
+| ![](assets/Discover-loading.png) | ![](assets/Discover.png) |
 
 ### Insights
 
 | Listening Insights         | Discovery Analytics        |
 |----------------------------|----------------------------|
-| ![](assets/insights 1.png) | ![](assets/insights 2.png) |
+| ![](assets/Insights-1.png) | ![](assets/Insights-2.png) |
 
 ### Discovery Journeys
 
-| Journey Overview | Journey Details |
-|----------|----------|
-| ![](assets/journeys.png) | ![](assets/journey.png) |
+| Journey Overview         | Journey Details         |
+|--------------------------|-------------------------|
+| ![](assets/Journeys.png) | ![](assets/Journey.png) |
 
 ### Profile & Library
 
-| Liked Songs | Profile                   | Settings                 |
-|----------|---------------------------|--------------------------|
-| ![](assets/liked.png) | ![](assets/profile 1.png) | ![](assets/settings.png) |
+| Liked Songs           | Profile                   | Settings                 |
+|-----------------------|---------------------------|--------------------------|
+| ![](assets/Liked.png) | ![](assets/Profile-1.png) | ![](assets/Settings.png) |
 
 ### Sharing
 
 | Share Journey                 | Extended Share View                    |
 |-------------------------------|----------------------------------------|
-| ![](assets/share journey.png) | ![](assets/share journey extended.png) |
+| ![](assets/Share-journey.png) | ![](assets/Share-journey-extended.png) |
 
 ## Recommendation Pipeline
 
