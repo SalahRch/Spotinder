@@ -3,6 +3,12 @@
 > **Spotinder exists to make discovering music as enjoyable as listening
 > to it.**
 
+🌐 **Live Demo:** https://spotify-five.vercel.app
+
+📚 **Documentation:** Architecture, API, database design, deployment, and recommendation engine documentation included.
+
+🎵 **Built with Spotify APIs**
+
 Spotinder is a full-stack music discovery platform built around Spotify.
 It turns discovery into an interactive experience: users connect their
 Spotify account, build a taste profile, control how adventurous
@@ -34,6 +40,44 @@ playback integration.
 -   Spotify Free fallback that opens the exact track on Spotify
 -   Early-access request flow for Spotify Development Mode
 -   Production deployment with Vercel, Railway, and Supabase
+
+## Product tour
+
+### Onboarding
+
+| Welcome                      | Profile analytics            | Adventure Mode               |
+|------------------------------|------------------------------|------------------------------|
+| ![](assets/onboarding 1.png) | ![](assets/onboarding 2.png) | ![](assets/onboarding 3.png) |
+
+### Discovery
+
+| Loading Discovery                | Swipe Experience         |
+|----------------------------------|--------------------------|
+| ![](assets/discover loading.png) | ![](assets/discover.png) |
+
+### Insights
+
+| Listening Insights         | Discovery Analytics        |
+|----------------------------|----------------------------|
+| ![](assets/insights 1.png) | ![](assets/insights 2.png) |
+
+### Discovery Journeys
+
+| Journey Overview | Journey Details |
+|----------|----------|
+| ![](assets/journeys.png) | ![](assets/journey.png) |
+
+### Profile & Library
+
+| Liked Songs | Profile                   | Settings                 |
+|----------|---------------------------|--------------------------|
+| ![](assets/liked.png) | ![](assets/profile 1.png) | ![](assets/settings.png) |
+
+### Sharing
+
+| Share Journey                 | Extended Share View                    |
+|-------------------------------|----------------------------------------|
+| ![](assets/share journey.png) | ![](assets/share journey extended.png) |
 
 ## Recommendation Pipeline
 
@@ -242,31 +286,18 @@ Spotinder/
 
 ## Documentation
 
-  -------------------------------------------------------------------------------
-  Document                                    Description
-  ------------------------------------------- -----------------------------------
-  [Product](docs/01-product.md)               Vision, product principles,
-                                              features and scope
+| Document | Description |
+|----------|-------------|
+| [Product](docs/01-product.md) | Vision, product principles, features and scope |
+| [User Journey](docs/02-user-journey.md) | End-to-end user experience |
+| [Architecture](docs/03-architecture.md) | Current technical architecture |
+| [Database](docs/04-database.md) | Persistence model and data ownership |
+| [API](docs/05-api.md) | REST API surface |
+| [Backlog / Status](docs/06-backlog.md) | Completed work and remaining polish |
+| [Technical Decisions](docs/07-decisions.md) | Important engineering decisions |
+| [Recommendation Engine](docs/08-recommendation-engine.md) | Discovery algorithm |
+| [Deployment](docs/09-deployment.md) | Production topology and deployment notes |
 
-  [User Journey](docs/02-user-journey.md)     End-to-end user experience
-
-  [Architecture](docs/03-architecture.md)     Current technical architecture
-
-  [Database](docs/04-database.md)             Persistence model and data
-                                              ownership
-
-  [API](docs/05-api.md)                       Current REST API surface
-
-  [Backlog / Status](docs/06-backlog.md)      Completed work and remaining polish
-
-  [Technical Decisions](docs/07-decisions.md) Important engineering decisions
-
-  [Recommendation                             Detailed discovery algorithm
-  Engine](docs/08-recommendation-engine.md)   
-
-  [Deployment](docs/09-deployment.md)         Production topology and deployment
-                                              notes
-  -------------------------------------------------------------------------------
 
 ## Development Status
 
