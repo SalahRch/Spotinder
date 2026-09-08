@@ -84,35 +84,30 @@ playback integration.
 Spotinder does not simply display a Spotify recommendation feed. The
 backend builds and ranks its own discovery pool.
 
-``` text
-Spotify listening signals + Spotinder swipe history
-                         |
-                         v
-                  Taste Profile
-                         |
-                         v
-               Genre Classification
-                         |
-                         v
-               Genre Exploration Graph
-                         |
-                         v
-                  Adventure Mode
-                         |
-                         v
-                Exploration Plan
-                         |
-                         v
-              Candidate Generation
-                         |
-                         v
-              Filtering + Scoring
-                         |
-                         v
-                Diverse Composition
-                         |
-                         v
-                Discovery Swipe Deck
+```mermaid
+
+flowchart TD
+    A["Spotify Listening Signals +<br/>Spotinder Swipe History"]
+    B["Taste Profile"]
+    C["Genre Classification"]
+    D["Genre Exploration Graph"]
+    E["Adventure Mode"]
+    F["Exploration Plan"]
+    G["Candidate Generation"]
+    H["Filtering + Scoring"]
+    I["Diverse Composition"]
+    J["Discovery Swipe Deck"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+
 ```
 
 For the full explanation, see [How Recommendations
@@ -155,22 +150,20 @@ Work](docs/08-recommendation-engine.md).
 
 ## Architecture
 
-``` text
-                         Spotify Accounts
-                                |
-                                | OAuth 2.0
-                                v
-+----------------+      HTTPS      +--------------------+
-| React / Vite   | <-------------> | Spring Boot API    |
-| Frontend       |                 | Modular Monolith   |
-+----------------+                 +---------+----------+
-                                             |
-                            +----------------+----------------+
-                            |                                 |
-                            v                                 v
-                    PostgreSQL / Supabase              Spotify Web API
-                    application data                  profile, music,
-                                                     playlists, playback
+```mermaid
+
+flowchart LR
+    Spotify["Spotify Accounts"]
+    Frontend["React / Vite<br/>Frontend"]
+    Backend["Spring Boot API<br/>Modular Monolith"]
+    DB["PostgreSQL / Supabase<br/>Application Data"]
+    API["Spotify Web API<br/>Profile, Music,<br/>Playlists, Playback"]
+
+    Spotify -->|"OAuth 2.0"| Frontend
+    Frontend <-->|"HTTPS"| Backend
+    Backend --> DB
+    Backend --> API
+
 ```
 
 The backend is a **modular monolith** organized around business domains
@@ -179,24 +172,40 @@ insights, onboarding, achievements, and access requests.
 
 ## Core User Journey
 
-``` text
-Landing Page
-    |
-Spotify Login
-    |
-Analyze Spotify Taste
-    |
-    +-- enough data --> Discovery Profile
-    |
-    +-- little/no data --> Pick 3 Genres
-    |
-Adventure Mode
-    |
-Discover / Swipe
-    |
-Likes --> Create Spotify Playlist
-    |
-Insights / Journeys / Achievements / Profile
+```mermaid
+flowchart TD
+    A["Landing Page"]
+    B["Spotify Login"]
+    C["Analyze Spotify Taste"]
+    D["Discovery Profile"]
+    E["Pick 3 Genres"]
+    F["Adventure Mode"]
+    G["Discover / Swipe"]
+    H["Likes"]
+    I["Create Spotify Playlist"]
+    J["Insights"]
+    K["Journeys"]
+    L["Achievements"]
+    M["Profile"]
+
+    A --> B
+    B --> C
+
+    C -->|"Enough data"| D
+    C -->|"Little / no data"| E
+
+    D --> F
+    E --> F
+
+    F --> G
+    G --> H
+    H --> I
+
+    G --> J
+    G --> K
+    G --> L
+    G --> M
+
 ```
 
 ## Spotify Free vs Premium
